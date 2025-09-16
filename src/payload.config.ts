@@ -7,6 +7,9 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
+import { en } from '@payloadcms/translations/languages/en'
+import { es } from '@payloadcms/translations/languages/es'
+
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 
@@ -19,6 +22,10 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+  },
+  i18n: {
+    supportedLanguages: { en, es },
+    fallbackLanguage: 'es'
   },
   collections: [Users, Media],
   editor: lexicalEditor(),
