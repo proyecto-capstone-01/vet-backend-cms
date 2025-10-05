@@ -2,10 +2,10 @@ import { headers as getHeaders } from 'next/headers.js'
 import Image from 'next/image'
 import { getPayload } from 'payload'
 import React from 'react'
-import { fileURLToPath } from 'url'
 
-import config from '@/payload.config'
+import config from '@payload-config'
 import './styles.css'
+import { redirect } from 'next/navigation'
 
 export default async function HomePage() {
   const headers = await getHeaders()
@@ -13,7 +13,24 @@ export default async function HomePage() {
   const payload = await getPayload({ config: payloadConfig })
   const { user } = await payload.auth({ headers })
 
-  const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
+  if (!user) return
+
+  user.roles.forEach(role => {
+    switch (role) {
+      case 'admin':
+        return redirect('/dashboard')
+      case 'blogger':
+        return redirect('/admin')
+      case 'editor':
+        return redirect('/admin')
+      case 'webEditor':
+        return redirect('/admin')
+      case 'dashboard':
+        return redirect('/dashboard')
+      default:
+        return redirect('/admin/login')
+    }
+  })
 
   return (
     <div className="home">
@@ -30,29 +47,15 @@ export default async function HomePage() {
         {!user && <h1>Welcome to your new project.</h1>}
         {user && <h1>Welcome back, {user.email}</h1>}
         <div className="links">
-          <a
-            className="admin"
-            href={payloadConfig.routes.admin}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Go to admin panel
+          <a className="admin" href={payloadConfig.routes.admin} rel="noopener noreferrer">
+            Go to CMS panel
           </a>
-          <a
-            className="docs"
-            href="https://payloadcms.com/docs"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Documentation
+          <a className="docs" href="/dashboard">
+            Go to Dashboard
           </a>
         </div>
       </div>
       <div className="footer">
-        <p>Update this page by editing</p>
-        <a className="codeLink" href={fileURL}>
-          <code>app/(frontend)/page.tsx</code>
-        </a>
       </div>
     </div>
   )
