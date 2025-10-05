@@ -1,8 +1,7 @@
 {
   "name": "vet-backend-cms",
+  "private": true,
   "version": "1.0.0",
-  "description": "A blank template to get started with Payload 3.0",
-  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
@@ -18,19 +17,20 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "3.55.1",
     "@payloadcms/next": "3.55.1",
     "@payloadcms/payload-cloud": "3.55.1",
     "@payloadcms/richtext-lexical": "3.55.1",
+    "@payloadcms/translations": "^3.55.1",
     "@payloadcms/ui": "3.55.1",
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "graphql": "^16.8.1",
-    "next": "15.4.4",
+    "next": "15.4.7",
     "payload": "3.55.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "sharp": "0.34.2",
-    "@payloadcms/db-postgres": "3.55.1"
+    "sharp": "0.34.2"
   },
   "devDependencies": {
     "@playwright/test": "1.54.1",
