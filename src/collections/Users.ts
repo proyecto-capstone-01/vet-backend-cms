@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '@/access/authenticated'
 import { isAdmin, isAdminFieldLevel } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 
