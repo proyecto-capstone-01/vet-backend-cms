@@ -72,6 +72,7 @@ export interface Config {
     team: Team;
     faq: Faq;
     products: Product;
+    'contact-form': ContactForm;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -83,6 +84,7 @@ export interface Config {
     team: TeamSelect<false> | TeamSelect<true>;
     faq: FaqSelect<false> | FaqSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'contact-form': ContactFormSelect<false> | ContactFormSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -270,6 +272,20 @@ export interface Product {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-form".
+ */
+export interface ContactForm {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  contactPreference?: ('email' | 'phone') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -294,6 +310,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products';
         value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'contact-form';
+        value: number | ContactForm;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -487,6 +507,19 @@ export interface ProductsSelect<T extends boolean = true> {
   discount?: T;
   outOfStock?: T;
   images?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-form_select".
+ */
+export interface ContactFormSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  phone?: T;
+  message?: T;
+  contactPreference?: T;
   updatedAt?: T;
   createdAt?: T;
 }

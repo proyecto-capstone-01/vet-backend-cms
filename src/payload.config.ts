@@ -16,6 +16,7 @@ import { Media } from '@/collections/Media'
 import { Team } from '@/collections/Team'
 import { FrequentlyAskQuestions } from '@/collections/FAQ'
 import { Products } from '@/collections/Products'
+import { ContactForm } from '@/collections/ContactForm'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -54,7 +55,8 @@ export default buildConfig({
     Media,
     Team,
     FrequentlyAskQuestions,
-    Products
+    Products,
+    ContactForm
   ],
   telemetry: false,
   editor: lexicalEditor(),
