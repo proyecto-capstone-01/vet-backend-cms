@@ -30,6 +30,10 @@ export const Team: CollectionConfig = {
       name: 'picture',
       type: 'upload',
       relationTo: 'media',
+      label: {
+        en: 'Picture',
+        es: 'Foto'
+      }
     }
   ],
   labels: {
