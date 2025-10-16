@@ -40,8 +40,8 @@ export default buildConfig({
     },
   },
   i18n: {
-    supportedLanguages: { en, es },
     fallbackLanguage: 'es',
+    supportedLanguages: { es, en },
     translations: customTranslations
   },
   collections: [
