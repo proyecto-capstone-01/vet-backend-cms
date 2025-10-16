@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import '../(frontend)/styles.css'
 
 export const metadata: Metadata = {
   title: 'Unauthorized',
