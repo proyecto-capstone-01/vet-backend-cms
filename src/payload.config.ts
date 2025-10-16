@@ -9,6 +9,7 @@ import sharp from 'sharp'
 // Translations
 import { en } from '@payloadcms/translations/languages/en'
 import { es } from '@payloadcms/translations/languages/es'
+import { customTranslations } from '@/custom-translations'
 
 // Collections
 import { Users } from '@/collections/Users'
@@ -37,18 +38,7 @@ export default buildConfig({
   i18n: {
     supportedLanguages: { en, es },
     fallbackLanguage: 'es',
-    translations: {
-      en: {
-        custom: {
-          dashboardGreeting: `Welcome to the Content Management System Dashboard.`,
-        },
-      },
-      es: {
-        custom: {
-          dashboardGreeting: 'Bienvenido al panel de Gestión de Contenido.',
-        },
-      },
-    },
+    translations: customTranslations
   },
   collections: [
     Users,
