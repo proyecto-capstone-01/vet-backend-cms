@@ -20,17 +20,6 @@ export const Users: CollectionConfig = {
   auth: true,
   fields: [
     {
-      name: 'name',
-      type: 'text',
-      minLength: 2,
-      maxLength: 256,
-      label: {
-        es: 'Nombre',
-        en: 'Name'
-      },
-      required: true
-    },
-    {
       type: 'row',
       fields: [
         {
@@ -38,7 +27,7 @@ export const Users: CollectionConfig = {
           type: 'text',
           minLength: 2,
           maxLength: 256,
-          //required: true,
+          required: true,
           label: {
             en: 'First name',
             es: 'Nombre'
@@ -49,7 +38,7 @@ export const Users: CollectionConfig = {
           type: 'text',
           minLength: 2,
           maxLength: 256,
-          //required: true,
+          required: true,
           label: {
             en: 'Last name',
             es: 'Apellido'
