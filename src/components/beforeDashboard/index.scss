@@ -1,7 +1,7 @@
 @import '~@payloadcms/ui/scss';
 
 .dashboard .before-dashboard {
-  margin-bottom: base(1.5);
+  margin-bottom: base(0.5);
 
   &__banner {
     & h4 {
@@ -9,16 +9,16 @@
     }
   }
 
-  &__instructions {
-    list-style: decimal;
-    margin-bottom: base(0.5);
-
-    & li {
-      width: 100%;
-    }
-  }
-
   & a:hover {
     opacity: 0.85;
+  }
+
+
+  &__actions {
+    display: flex;
+    gap: base(1);
+    button {
+      padding: base(0.4) base(0.8);
+    }
   }
 }
