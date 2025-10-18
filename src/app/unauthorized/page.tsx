@@ -1,11 +1,11 @@
 import React from 'react'
 import Link from 'next/link'
-import { headers } from 'next/headers'
-import config from '@payload-config'
-import { getPayload } from 'payload'
-import { Lock, Undo2 } from 'lucide-react'
+// import { headers } from 'next/headers'
+// import config from '@payload-config'
+// import { getPayload } from 'payload'
+import { IconLock, IconArrowBack } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
-import { getTranslation, I18n, t,  } from '@payloadcms/translations'
+// import { getTranslation, I18n, t,  } from '@payloadcms/translations'
 
 export default async function Unauthorized() {
   // const hdrs = await headers()
@@ -28,7 +28,7 @@ export default async function Unauthorized() {
     <div className="min-h-[70vh] flex items-center justify-center px-4">
       <div className="w-full max-w-md text-center space-y-6">
         <div className="mx-auto grid place-items-center size-14 rounded-full bg-muted text-muted-foreground">
-          <Lock className="size-7" aria-hidden="true" />
+          <IconLock className="size-7" aria-hidden="true" />
         </div>
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">
@@ -42,7 +42,7 @@ export default async function Unauthorized() {
           <Button asChild variant="outline">
             <Link href="/">
               Go Back
-              <Undo2 />
+              <IconArrowBack />
             </Link>
           </Button>
           <Button variant="destructive">
