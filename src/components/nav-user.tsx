@@ -88,7 +88,7 @@ export function NavUser({
               <Link href="/admin/account">
                 <DropdownMenuItem>
                   <IconUserCircle />
-                  Account
+                  Cuenta
                 </DropdownMenuItem>
               </Link>
               {/*
@@ -102,7 +102,7 @@ export function NavUser({
             <Link href="/admin/logout">
               <DropdownMenuItem>
                 <IconLogout />
-                Log out
+                Cerrar Sesión
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
