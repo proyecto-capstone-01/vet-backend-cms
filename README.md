@@ -8,7 +8,9 @@
 
 ## Configuración del Proyecto
 
-### 1. Variables .env
+## 1. Para desarrollo local
+
+### 1.1 Variables .env
 
 
 Copia las variables de entorno de ejemplo:
@@ -17,19 +19,19 @@ cp .env.example .env
 ```
 Remplaza los valores en el archivo `.env` con tus credenciales y configuraciones.
 
-### 2. Instalación de Dependencias
+### 1.2. Instalación de Dependencias
 
 Instala las dependencias del proyecto usando `pnpm`:
 ```shell
 pnpm install
 ```
 
-### 3. [Docker-compose](docker-compose.yml) para base de datos
+### 1.3. [Docker-compose](docker-compose.yml) para base de datos
 ```shell
 docker compose up -d
 ```
 
-### 4. Ejecución del Proyecto en Modo Desarrollo
+### 1.4. Ejecución del Proyecto en Modo Desarrollo
 
 Inicia el servidor de desarrollo:
 ```shell
@@ -37,14 +39,16 @@ pnpm dev
 ```
 > El servidor estará disponible en `http://localhost:3000/`.
 
-### 5. Construcción del Proyecto para Producción
+## 2. Producción
+
+### 2.1. Construcción del Proyecto para Producción
 
 Construye el proyecto para producción:
 ```shell
 pnpm build
 ```
 
-### 6. Ejecución del Proyecto en Modo Producción
+### 2.2. Ejecución del Proyecto en Modo Producción
 
 Inicia el servidor en modo producción:
 ```shell
