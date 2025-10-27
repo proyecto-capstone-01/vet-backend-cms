@@ -8,8 +8,8 @@ import { redirect } from 'next/navigation'
 import { ThemeProvider } from "@/components/ThemeProvider"
 
 export const metadata: Metadata = {
-  description: 'app',
-  title: 'app',
+  description: 'Dashboard de administración de Veterinaria Pucará',
+  title: 'Dashboard - Veterinaria Pucará',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {

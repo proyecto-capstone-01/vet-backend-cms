@@ -8,7 +8,7 @@ import {
   IconUsers,
   IconDog,
   IconPackage,
-  IconFileText,
+  IconFileText, // <--- Icono ya importado, listo para usar
   IconDatabase,
   IconFiles,
   IconFileWord,
@@ -29,6 +29,7 @@ import {
 import { NavMain } from "@/components/nav-main"
 import { NavDocuments } from "@/components/nav-documents"
 
+// ... (tu objeto 'data' permanece igual)
 const data = {
   navMain: [
     {
@@ -48,6 +49,15 @@ const data = {
       items: [
         { title: "Análisis de Visitas", url: "/dashboard/analitica/visitas" },
         { title: "Análisis de Servicios", url: "/dashboard/analitica/servicios" },
+      ],
+    },
+    {
+      title: "Horas",
+      icon: IconClock,
+      url: "/dashboard/horas",
+      items: [
+        { title: "Calendario con Horas", url: "/dashboard/horas" },
+        { title: "Seleccionar Horas para Desplegar", url: "/dashboard/horas/seleccionar" },
       ],
     },
     {
@@ -73,21 +83,6 @@ const data = {
       icon: IconPackage,
       url: "/dashboard/inventario",
       items: [{ title: "Tabla con Productos", url: "/dashboard/inventario" }],
-    },
-    {
-      title: "Horas",
-      icon: IconClock,
-      url: "/dashboard/horas",
-      items: [
-        { title: "Calendario con Horas", url: "/dashboard/horas" },
-        { title: "Seleccionar Horas para Desplegar", url: "/dashboard/horas/seleccionar" },
-      ],
-    },
-    {
-      title: "Crear Receta",
-      icon: IconFileText,
-      url: "/dashboard/recetas",
-      items: [{ title: "Formulario de Creación", url: "/dashboard/recetas/nueva" }],
     },
   ],
 
@@ -141,6 +136,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
+
+          <SidebarMenuItem className="mt-2">
+            <SidebarMenuButton asChild>
+              <a
+                href="/dashboard/recetas"
+                className="flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors duration-200 ease-linear"
+              >
+                <IconFileText className="size-4" />
+                Crear Receta
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
@@ -157,7 +164,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild>
               <a
                 href="/dashboard/manual-usuario"
-                className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <IconBook className="size-4" />
                 Manual de Usuario
