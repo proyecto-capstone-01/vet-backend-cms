@@ -6,6 +6,16 @@ export const GET = async (request: Request) => {
     config: configPromise,
   })
 
+  const pets = await payload.find({
+    collection: 'pets',
+    limit: 10,
+  })
+
+
+
+  console.log('---')
+
+  console.log('Retrieved pets:', pets)
 
 
   return Response.json({
