@@ -1,40 +1,55 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
+"use client"
 
+import { GenericDataTable } from "@/components/DataTable"
 import data from "./data.json"
 
-export default function Page() {
+export default function DashboardPage() {
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "Completado":
+        return <div className="border w-fit px-2 py-1"><span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-1"></span>Completado</div>
+      case "Cancelado":
+        return <div className="border w-fit px-2 py-1"><span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-1"></span>Cancelado</div>
+      default:
+        return <div className="border w-fit px-2 py-1"><span className="inline-block w-2 h-2 bg-amber-400 rounded-full mr-1"></span>Pendiente</div>
+    }}
+
+  const columns = [
+    {
+      header: "Mascota",
+      accessorKey: "nombre",
+    },
+    {
+      header: "Tipo",
+      accessorKey: "tipo",
+    },
+    {
+      header: "Servicio",
+      accessorKey: "servicio",
+    },
+    {
+      header: "Fecha",
+      accessorKey: "fecha",
+    },
+    {
+      header: "Hora",
+      accessorKey: "hora",
+    },
+    {
+      header: "Estado",
+      accessorKey: "estado",
+      cell: ({ row }: any) => getStatusBadge(row.original.estado),
+    },
+    {
+      header: "Dueño",
+      accessorKey: "dueño",
+    },
+  ]
+
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
-              <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
-              </div>
-              <DataTable data={data} />
-            </div>
-          </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="@container/main flex flex-1 flex-col gap-2 py-6 px-4 md:px-6">
+      <GenericDataTable columns={columns} data={data} pageSizeOptions={[5, 10, 20]} title="Horas para hoy" />
+    </div>
   )
 }

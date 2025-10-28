@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import {
   IconDots,
   IconFolder,
@@ -41,13 +42,18 @@ export function NavDocuments({
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>CMS</SidebarGroupLabel>
+      <SidebarGroupLabel>Contenido WEB</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild className={item.className ? `${item.className}` : ''}>
+            <SidebarMenuButton asChild className={item.className || ''}>
               {item.external ? (
-                <a href={item.url} className="flex items-center justify-between">
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center gap-2">
                     <item.icon />
                     <span>{item.name}</span>
@@ -55,52 +61,14 @@ export function NavDocuments({
                   <IconExternalLink />
                 </a>
               ) : (
-                <a href={item.url}>
+                <Link href={item.url} className="flex items-center gap-2">
                   <item.icon />
                   <span>{item.name}</span>
-                </a>
+                </Link>
               )}
             </SidebarMenuButton>
-            {/*
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction
-                  showOnHover
-                  className="data-[state=open]:bg-accent rounded-sm"
-                >
-                  <IconDots />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-24 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem>
-                  <IconFolder />
-                  <span>Open</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <IconShare3 />
-                  <span>Share</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive">
-                  <IconTrash />
-                  <span>Delete</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            */}
           </SidebarMenuItem>
         ))}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <IconDots className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
   )
