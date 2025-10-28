@@ -73,6 +73,8 @@ export interface Config {
     faq: Faq;
     products: Product;
     'contact-form': ContactForm;
+    owners: Owner;
+    pets: Pet;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -85,6 +87,8 @@ export interface Config {
     faq: FaqSelect<false> | FaqSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'contact-form': ContactFormSelect<false> | ContactFormSelect<true>;
+    owners: OwnersSelect<false> | OwnersSelect<true>;
+    pets: PetsSelect<false> | PetsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -285,6 +289,44 @@ export interface ContactForm {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "owners".
+ */
+export interface Owner {
+  id: number;
+  firstName: string;
+  lastName: string;
+  rut: string;
+  email?: string | null;
+  phoneNumber: string;
+  address?: string | null;
+  nameRutCombination?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pets".
+ */
+export interface Pet {
+  id: number;
+  owner: number | Owner;
+  name: string;
+  microchipNumber?: number | null;
+  species: 'dog' | 'cat';
+  /**
+   * Real or approximate date of birth
+   */
+  dateOfBirth?: string | null;
+  sex: 'male' | 'female';
+  color?: string | null;
+  breed?: string | null;
+  weight?: number | null;
+  height?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -313,6 +355,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'contact-form';
         value: number | ContactForm;
+      } | null)
+    | ({
+        relationTo: 'owners';
+        value: number | Owner;
+      } | null)
+    | ({
+        relationTo: 'pets';
+        value: number | Pet;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -518,6 +568,39 @@ export interface ContactFormSelect<T extends boolean = true> {
   phone?: T;
   message?: T;
   contactPreference?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "owners_select".
+ */
+export interface OwnersSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  rut?: T;
+  email?: T;
+  phoneNumber?: T;
+  address?: T;
+  nameRutCombination?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pets_select".
+ */
+export interface PetsSelect<T extends boolean = true> {
+  owner?: T;
+  name?: T;
+  microchipNumber?: T;
+  species?: T;
+  dateOfBirth?: T;
+  sex?: T;
+  color?: T;
+  breed?: T;
+  weight?: T;
+  height?: T;
   updatedAt?: T;
   createdAt?: T;
 }

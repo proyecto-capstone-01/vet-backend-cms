@@ -1,12 +1,22 @@
 import type { CollectionConfig } from 'payload'
+import { anyone } from '@/access/anyone'
+import { authenticated } from '@/access/authenticated'
+import { isAdmin } from '@/access/isAdmin'
 
 export const FrequentlyAskQuestions: CollectionConfig = {
   slug: 'faq',
   admin: {
+    useAsTitle: 'question',
     group: {
       en: 'Website Content',
       es: 'Contenido del Sitio Web'
     }
+  },
+  access: {
+    read: anyone,
+    create: authenticated,
+    update: authenticated,
+    delete: isAdmin,
   },
   fields: [
     {

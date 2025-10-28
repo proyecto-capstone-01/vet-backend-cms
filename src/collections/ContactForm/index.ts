@@ -79,13 +79,7 @@ export const ContactForm: CollectionConfig = {
       }
     },
   ],
-  hooks: {
-    beforeChange: [
-      async () => {
-        throw new Error('Form submissions are disabled.');
-      }
-    ]
-  },
+  hooks: {},
   labels: {
     singular: {
       en: 'contact form submission',
