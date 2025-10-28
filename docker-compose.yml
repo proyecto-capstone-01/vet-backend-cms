@@ -36,6 +36,7 @@ services:
     volumes:
       - pg-data:/var/lib/postgresql/data
 
+  # OPTIONAL
   pgadmin:
     image: dpage/pgadmin4
     ports:
