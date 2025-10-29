@@ -91,7 +91,7 @@ export default function DashboardPage() {
 
   return (
     <div className="@container/main flex flex-1 flex-col gap-6 py-6 px-4 md:px-6">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-4 mb-4">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4 mb-4">
         <StatCard
           title="Horas Agendadas Hoy"
           description="Total de horas agendadas para hoy"
