@@ -165,7 +165,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <a
-                href="/dashboard/manual-usuario"
+                href="/dashboard/manualdeusuario"
                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${
                   pathname === "/dashboard/manual-usuario"
                     ? "text-foreground"
