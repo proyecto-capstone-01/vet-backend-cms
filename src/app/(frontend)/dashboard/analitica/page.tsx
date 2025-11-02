@@ -2,148 +2,173 @@
 
 import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react"
 import { StatCard } from "@/components/StatCard"
-import { GenericAreaChart } from "@/components/GenericAreaChart"
 import { GenericPieChart } from "@/components/GenericPieChart"
-// 1. IMPORTACIÓN AÑADIDA
+import { GenericAreaChart } from "@/components/GenericAreaChart"
 import { GenericBarChart } from "@/components/GenericBarChart"
 
-// Datos para los gráficos de área (y ahora barras)
-const ventasData = [
-  { date: "2024-04-01", online: 200, tienda: 150 },
-  { date: "2024-04-02", online: 180, tienda: 190 },
-  { date: "2024-04-03", online: 220, tienda: 210 },
-  { date: "2024-04-04", online: 250, tienda: 180 },
-  { date: "2024-04-05", online: 230, tienda: 200 },
-  // ... más datos (idealmente 90 días para que los filtros funcionen)
+// === Datos simulados ===
+
+// Cards
+const totalAgendas = "145"
+const tasaCancelacion = "7.3%"
+const mascotasRegistradas = "342"
+
+// Tortas
+const serviciosMasSolicitados = [
+  { name: "Consulta", value: 120, fill: "var(--chart-1)" },
+  { name: "Vacunación", value: 80, fill: "var(--chart-2)" },
+  { name: "Desparasitación", value: 50, fill: "var(--chart-3)" },
+  { name: "Peluquería", value: 40, fill: "var(--chart-4)" },
 ]
 
-// Datos para los gráficos de pastel
-const pieChartData = [
-  { name: "Perros", value: 400, fill: "var(--chart-1)" },
-  { name: "Gatos", value: 300, fill: "var(--chart-2)" },
-  { name: "Otros", value: 100, fill: "var(--chart-4)" },
+const perrosVsGatos = [
+  { name: "Perros", value: 220, fill: "var(--chart-1)" },
+  { name: "Gatos", value: 122, fill: "var(--chart-2)" },
 ]
 
-export default function DashboardPage() {
+const serviciosEntregados = [
+  { name: "Vacunación", value: 150, fill: "var(--chart-3)" },
+  { name: "Cirugías", value: 50, fill: "var(--chart-4)" },
+  { name: "Controles", value: 100, fill: "var(--chart-5)" },
+]
+
+// Líneas (Ingresos y Citas)
+const ingresosMensuales = [
+  { date: "2024-01-01", ingresos: 500 },
+  { date: "2024-02-01", ingresos: 700 },
+  { date: "2024-03-01", ingresos: 800 },
+  { date: "2024-04-01", ingresos: 1000 },
+  { date: "2024-05-01", ingresos: 1200 },
+  { date: "2024-06-01", ingresos: 1800 },
+  { date: "2024-07-01", ingresos: 1400 },
+  { date: "2024-08-01", ingresos: 2000 },
+  { date: "2024-09-01", ingresos: 2200 },
+  { date: "2024-10-01", ingresos: 1950 },
+  { date: "2024-11-01", ingresos: 2500 },
+  { date: "2024-12-01", ingresos: 3000 },
+]
+
+const citasAgVsAt = [
+  { date: "2024-05-01", agendadas: 150, atendidas: 140 },
+  { date: "2024-06-01", agendadas: 170, atendidas: 165 },
+  { date: "2024-07-01", agendadas: 160, atendidas: 150 },
+  { date: "2024-08-01", agendadas: 190, atendidas: 185 },
+  { date: "2024-09-01", agendadas: 210, atendidas: 205 },
+  { date: "2024-10-01", agendadas: 230, atendidas: 220 },
+]
+
+// Barras (Día y Personal)
+const atencionesPorDia = [
+  { date: "Lunes", atenciones: 25 },
+  { date: "Martes", atenciones: 30 },
+  { date: "Miércoles", atenciones: 28 },
+  { date: "Jueves", atenciones: 35 },
+  { date: "Viernes", atenciones: 40 },
+]
+
+const horasPersonal = [
+  { date: "Dr. Pérez", horas: 140 },
+  { date: "Dra. Soto", horas: 155 },
+  { date: "Dr. Ruiz", horas: 130 },
+  { date: "Asistente Ana", horas: 160 },
+]
+
+export default function AnaliticaPage() {
   return (
-    // @container activa las container queries.
-    // Los prefijos como "@lg:" ahora reaccionan al tamaño de este div.
     <div className="@container flex flex-col gap-6 p-6">
-      
-      {/* === Tarjetas de estadísticas === */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      {/* === Tarjetas === */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         <StatCard
-          title="Ingresos Totales"
-          description="Ingresos totales de este mes"
-          value="$1,250.00"
+          title="Total Agendas Mensual"
+          description="Cantidad total de citas este mes"
+          value={totalAgendas}
           trend="up"
-          percent="12.5%"
+          percent="5%"
           icon={<IconTrendingUp className="size-4" />}
-          footerMain="Trending up this month"
-          footerSub="Visitors for the last 6 months"
+          footerMain="Agendas en aumento"
+          footerSub="Respecto al mes anterior"
         />
         <StatCard
-          title="Nuevos Clientes"
-          description="Clientes durante este período"
-          value="1,234"
+          title="Tasa de Cancelación"
+          description="Promedio mensual de cancelaciones"
+          value={tasaCancelacion}
           trend="down"
-          percent="20%"
+          percent="2%"
           icon={<IconTrendingDown className="size-4" />}
-          footerMain="Down 20% this period"
-          footerSub="Acquisition needs attention"
+          footerMain="Cancelaciones estables"
+          footerSub="Buen nivel de asistencia"
         />
         <StatCard
-          title="Cuentas Activas"
-          description="Retención total de usuarios"
-          value="45,678"
+          title="Mascotas Registradas"
+          description="Total de mascotas activas en el sistema"
+          value={mascotasRegistradas}
           trend="up"
-          percent="12.5%"
+          percent="10%"
           icon={<IconTrendingUp className="size-4" />}
-          footerMain="Strong user retention"
-          footerSub="Engagement exceeds targets"
-        />
-        <StatCard
-          title="Tasa de Crecimiento"
-          description="Crecimiento intermensual"
-          value="4.5%"
-          trend="up"
-          percent="4.5%"
-          icon={<IconTrendingUp className="size-4" />}
-          footerMain="Steady performance increase"
-          footerSub="Meets growth projections"
+          footerMain="Clientes recurrentes en alza"
+          footerSub="Aumento mensual positivo"
         />
       </div>
 
-      {/* === Gráficos de Pastel === */}
+      {/* === Gráficos de torta === */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         <GenericPieChart
-          title="Visitas por Mascota"
-          description="Distribución por tipo de mascota."
-          data={pieChartData}
+          title="Servicios Más Solicitados"
+          description="Proporción de servicios demandados."
+          data={serviciosMasSolicitados}
         />
         <GenericPieChart
-          title="Tipos de Servicio"
-          description="Servicios más solicitados."
-          data={[ // Datos de ejemplo
-            { name: "Consulta", value: 300, fill: "var(--chart-1)" },
-            { name: "Vacunación", value: 250, fill: "var(--chart-2)" },
-            { name: "Peluquería", value: 450, fill: "var(--chart-3)" },
+          title="Perros vs Gatos"
+          description="Cantidad registrada por especie."
+          data={perrosVsGatos}
+        />
+        <GenericPieChart
+          title="Servicios Entregados"
+          description="Distribución general de servicios."
+          data={serviciosEntregados}
+        />
+      </div>
+
+      {/* === Gráficos de líneas === */}
+      <div className="grid grid-cols-1 gap-6 @xl:grid-cols-2">
+        <GenericAreaChart
+          title="Ingresos Totales Mensual"
+          description="Evolución de ingresos últimos 6 meses"
+          data={ingresosMensuales}
+          dataKeys={[
+            { key: "ingresos", label: "Ingresos", color: "var(--chart-1)" },
           ]}
         />
-        <GenericPieChart
-          title="Ventas por Categoría"
-          description="Distribución de productos."
-          data={[ // Datos de ejemplo
-            { name: "Alimento", value: 600, fill: "var(--chart-5)" },
-            { name: "Juguetes", value: 150, fill: "var(--chart-3)" },
-            { name: "Medicina", value: 250, fill: "var(--chart-1)" },
+        <GenericAreaChart
+          title="Citas Agendadas vs Atendidas"
+          description="Comparación mensual de atención efectiva"
+          data={citasAgVsAt}
+          dataKeys={[
+            { key: "agendadas", label: "Agendadas", color: "var(--chart-2)" },
+            { key: "atendidas", label: "Atendidas", color: "var(--chart-3)" },
           ]}
         />
       </div>
 
-      {/* === Gráficos de Área === */}
+      {/* === Gráficos de barras === */}
       <div className="grid grid-cols-1 gap-6 @xl:grid-cols-2">
-        <GenericAreaChart
-          title="Ventas Totales"
-          description="Datos combinados de los últimos 3 meses"
-          data={ventasData}
+        <GenericBarChart
+          title="Atenciones por Día de Semana"
+          description="Distribución de atención semanal"
+          data={atencionesPorDia}
           dataKeys={[
-            { key: "online", label: "Ventas Online", color: "var(--primary)" },
-            { key: "tienda", label: "Ventas en Tienda", color: "var(--chart-2)" },
-          ]}
-        />
-        <GenericAreaChart
-          title="Usuarios Activos"
-          description="Usuarios únicos por día"
-          data={ventasData}
-          dataKeys={[
-            { key: "online", label: "Usuarios App", color: "var(--chart-3)" },
-            { key: "tienda", label: "Usuarios Web", color: "var(--chart-5)" },
-          ]}
-        />
-      </div>
-
-      {/* 2. SECCIÓN DE GRÁFICO DE BARRAS AÑADIDA */}
-      <div className="grid grid-cols-1 gap-6 @xl:grid-cols-2">
-                <GenericBarChart
-          title="Nuevos Registros (Barras)"
-          description="Nuevos usuarios por canal"
-          data={ventasData}
-          dataKeys={[
-            { key: "tienda", label: "Registros Tienda", color: "var(--chart-5)" },
+            { key: "atenciones", label: "Atenciones", color: "var(--chart-4)" },
           ]}
         />
         <GenericBarChart
-          title="Nuevos Registros (Barras)"
-          description="Nuevos usuarios por canal"
-          data={ventasData}
+          title="Horas Trabajadas del Personal"
+          description="Tiempo total trabajado por persona"
+          data={horasPersonal}
           dataKeys={[
-            { key: "tienda", label: "Registros Tienda", color: "var(--chart-5)" },
+            { key: "horas", label: "Horas", color: "var(--chart-5)" },
           ]}
         />
-        {/* Puedes añadir otro gráfico de barras aquí */}
       </div>
-
     </div>
   )
 }
