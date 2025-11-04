@@ -1,105 +1,67 @@
 'use client'
 
-import { GenericDataTable } from '@/components/DataTable'
+import { useRouter } from 'next/navigation'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
+import { GenericDataTable } from '@/components/DataTable'
 
-// Definir el tipo de datos
-interface Mascota {
-  nombreMascota: string
-  nombreDueno: string
-  rutDueno: string
-  edad: number
-  peso: number
-  raza: string
-}
-
-// Datos de ejemplo
-const mascotas: Mascota[] = [
+const MASCOTAS = [
   {
-    nombreMascota: 'Firulais',
-    nombreDueno: 'Juan Pérez',
-    rutDueno: '12.345.678-9',
+    id: 1,
+    nombre: 'Rex',
+    especie: 'Perro',
+    raza: 'Golden Retriever',
     edad: 5,
-    peso: 12.3,
-    raza: 'Beagle',
+    peso: '32 kg',
+    propietario: 'Juan Pérez',
+    telefonoPropietario: '+56 9 1234 5678',
+    microchip: '985001234567890',
+    ultimaVisita: '2025-10-15',
   },
   {
-    nombreMascota: 'Misha',
-    nombreDueno: 'Camila Soto',
-    rutDueno: '20.111.222-3',
+    id: 2,
+    nombre: 'Michi',
+    especie: 'Gato',
+    raza: 'Persa',
     edad: 3,
-    peso: 4.5,
-    raza: 'Gato Siamés',
-  },
-  {
-    nombreMascota: 'Rocky',
-    nombreDueno: 'Carlos López',
-    rutDueno: '18.777.555-2',
-    edad: 7,
-    peso: 25.1,
-    raza: 'Labrador Retriever',
-  },
-]
-
-// Definir las columnas
-const columns: ColumnDef<Mascota>[] = [
-  {
-    accessorKey: 'nombreMascota',
-    header: 'Nombre Mascota',
-  },
-  {
-    accessorKey: 'nombreDueno',
-    header: 'Nombre Dueño',
-  },
-  {
-    accessorKey: 'rutDueno',
-    header: 'RUT Dueño',
-  },
-  {
-    accessorKey: 'edad',
-    header: 'Edad (años)',
-    cell: ({ row }) => `${row.original.edad} años`,
-  },
-  {
-    accessorKey: 'peso',
-    header: 'Peso (kg)',
-    cell: ({ row }) => `${row.original.peso.toFixed(1)} kg`,
-  },
-  {
-    accessorKey: 'raza',
-    header: 'Raza',
-  },
-  {
-    id: 'actions',
-    header: 'Acción',
-    cell: ({ row }) => {
-      const router = useRouter()
-      return (
-        <Button
-          variant="default"
-          size="sm"
-          onClick={() =>
-            router.push(`/dashboard/mascotas/${row.original.nombreMascota.toLowerCase()}`)
-          }
-        >
-          Ver mascota
-        </Button>
-      )
-    },
+    peso: '4.5 kg',
+    propietario: 'María González',
+    telefonoPropietario: '+56 9 8765 4321',
+    microchip: '985001234567891',
+    ultimaVisita: '2025-09-20',
   },
 ]
 
 export default function MascotasPage() {
+  const router = useRouter()
+
+  const columns: ColumnDef<(typeof MASCOTAS)[number]>[] = [
+    { accessorKey: 'nombre', header: 'Nombre' },
+    { accessorKey: 'especie', header: 'Especie' },
+    { accessorKey: 'raza', header: 'Raza' },
+    { accessorKey: 'edad', header: 'Edad (años)' },
+    { accessorKey: 'peso', header: 'Peso' },
+    { accessorKey: 'propietario', header: 'Propietario' },
+    {
+      id: 'acciones',
+      header: 'Acciones',
+      cell: ({ row }) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push(`/mascotas/${row.original.id}`)}
+        >
+          Ver perfil
+        </Button>
+      ),
+    },
+  ]
+
   return (
-    <div className="p-6">
-      <GenericDataTable
-        columns={columns}
-        data={mascotas}
-        title="Mascotas registradas"
-        enableSearch={true}
-      />
+    <div className="p-6 flex flex-col gap-6">
+      <h1 className="text-2xl font-bold">Mascotas</h1>
+
+      <GenericDataTable columns={columns} data={MASCOTAS} title="Listado de Mascotas" />
     </div>
   )
 }
