@@ -1,7 +1,8 @@
-export default function HorasPage() {
-    return (
-        <div>
-            <h1 className="text-2xl font-bold">Horas</h1>
-        </div>
-    )
+import { getBusinessHoursData } from '../api-server'
+import HorasContent from './horas-content'
+
+export default async function HorasPage() {
+  const initialHours = await getBusinessHoursData()
+
+  return <HorasContent initialData={initialHours} />
 }
