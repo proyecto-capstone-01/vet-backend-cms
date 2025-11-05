@@ -57,7 +57,7 @@ export default function MascotasContent({ initialData }: MascotasContentProps) {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <StatCard title="Total Mascotas" value={data.length} description={''} />
       <GenericDataTable 
         columns={columns}

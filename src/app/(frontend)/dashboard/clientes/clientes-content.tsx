@@ -37,7 +37,7 @@ export default function ClientesContent({ initialData }: ClientesContentProps) {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <StatCard title="Total Clientes" value={data.length} description={''} />
       <GenericDataTable 
         columns={columns}
