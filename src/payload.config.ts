@@ -23,6 +23,7 @@ import { Products } from '@/collections/Products'
 import { ContactForm } from '@/collections/ContactForm'
 import { Owners } from '@/collections/Owners'
 import { Pets } from '@/collections/Pets'
+import { Appointments } from './collections/Appointments'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -55,6 +56,7 @@ export default buildConfig({
     ContactForm,
     Owners,
     Pets,
+    Appointments,
   ],
   telemetry: false,
   editor: lexicalEditor(),
