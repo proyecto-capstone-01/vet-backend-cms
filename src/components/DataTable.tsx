@@ -93,12 +93,12 @@ export function GenericDataTable<TData>({
   return (
     <div className="flex flex-col gap-4 w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 lg:px-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 lg:px-6">
         <div className="flex items-center gap-2">
           {title && <h2 className="font-semibold text-lg">{title}</h2>}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap justify-end">
+        <div className="flex items-center gap-2 flex-wrap justify-between">
           {enableSearch && (
             <div className="relative">
               <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
