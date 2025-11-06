@@ -48,7 +48,8 @@ interface DataKeyConfig {
 interface GenericAreaChartProps {
   title: string
   description?: string
-  data: { date: string; [key: string]: number }[]
+  data: { // @ts-ignore
+    date: string; [key: string]: number }[]
   dataKeys: DataKeyConfig[]
 }
 

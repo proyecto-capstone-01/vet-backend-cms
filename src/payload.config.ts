@@ -26,6 +26,7 @@ import { Owners } from '@/collections/Owners'
 import { Pets } from '@/collections/Pets'
 import { Inventory } from '@/collections/Inventory'
 import { Services } from '@/collections/Services'
+import { Appointments } from '@/collections/Appointments'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -72,6 +73,7 @@ export default buildConfig({
     Owners,
     Pets,
     Services,
+    Appointments,
   ],
   telemetry: false,
   editor: lexicalEditor(),
