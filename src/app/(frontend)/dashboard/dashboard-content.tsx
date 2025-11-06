@@ -6,13 +6,40 @@ import { StatCard } from '@/components/StatCard'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { ColumnDef } from '@tanstack/react-table'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface DashboardContentProps {
   initialData: any[]
 }
 
 export default function DashboardContent({ initialData }: DashboardContentProps) {
-  const { data, handleConfirm, handleReject } = useAppointments(initialData)
+  const { data, loading, handleConfirm, handleReject } = useAppointments(initialData)
+  const [processingId, setProcessingId] = useState<string | null>(null)
+
+  const handleConfirmClick = async (id: string) => {
+    setProcessingId(id)
+    try {
+      await handleConfirm(id)
+      toast.success('Cita confirmada')
+    } catch (err) {
+      toast.error('Error al confirmar cita')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleRejectClick = async (id: string) => {
+    setProcessingId(id)
+    try {
+      await handleReject(id)
+      toast.success('Cita rechazada')
+    } catch (err) {
+      toast.error('Error al rechazar cita')
+    } finally {
+      setProcessingId(null)
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
@@ -48,23 +75,24 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
       header: 'Acciones',
       cell: ({ row }) => {
         const original = row.original as any
+        const isProcessing = processingId === original.id
         return (
           <div className="flex gap-2">
             <Button
               size="sm"
               variant="default"
-              onClick={() => handleConfirm(original.id)}
-              disabled={original.estado !== 'Pendiente'}
+              onClick={() => handleConfirmClick(original.id)}
+              disabled={original.estado !== 'Pendiente' || loading || isProcessing}
             >
-              Confirmar
+              {isProcessing ? 'Confirmando...' : 'Confirmar'}
             </Button>
             <Button
               size="sm"
               variant="destructive"
-              onClick={() => handleReject(original.id)}
-              disabled={original.estado !== 'Pendiente'}
+              onClick={() => handleRejectClick(original.id)}
+              disabled={original.estado !== 'Pendiente' || loading || isProcessing}
             >
-              Rechazar
+              {isProcessing ? 'Rechazando...' : 'Rechazar'}
             </Button>
           </div>
         )
