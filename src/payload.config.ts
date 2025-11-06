@@ -1,6 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 // import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 // import { s3Storage } from '@payloadcms/storage-s3'
+import { resendAdapter } from '@payloadcms/email-resend'
 
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -23,7 +24,8 @@ import { Products } from '@/collections/Products'
 import { ContactForm } from '@/collections/ContactForm'
 import { Owners } from '@/collections/Owners'
 import { Pets } from '@/collections/Pets'
-import { Appointments } from './collections/Appointments'
+import { Inventory } from '@/collections/Inventory'
+import { Services } from '@/collections/Services'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -42,6 +44,18 @@ export default buildConfig({
       beforeDashboard: ['@/components/beforeDashboard'],
     },
   },
+  cors: {
+    origins: [
+      'http://localhost:3000',
+      'http://localhost:4321',
+      'http://127.0.0.1:3000',
+    ],
+  },
+  email: resendAdapter({
+    defaultFromAddress: process.env.DEFAULT_ADDRESS || '',
+    defaultFromName: process.env.DEFAULT_EMAIL_NAME || 'Admin',
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
   i18n: {
     fallbackLanguage: 'es',
     supportedLanguages: { es, en },
@@ -52,11 +66,12 @@ export default buildConfig({
     Media,
     Team,
     FrequentlyAskQuestions,
+    Inventory,
     Products,
     ContactForm,
     Owners,
     Pets,
-    Appointments,
+    Services,
   ],
   telemetry: false,
   editor: lexicalEditor(),

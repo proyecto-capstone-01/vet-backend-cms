@@ -71,11 +71,12 @@ export interface Config {
     media: Media;
     team: Team;
     faq: Faq;
+    inventory: Inventory;
     products: Product;
     'contact-form': ContactForm;
     owners: Owner;
     pets: Pet;
-    appointments: Appointment;
+    services: Service;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -86,11 +87,12 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     team: TeamSelect<false> | TeamSelect<true>;
     faq: FaqSelect<false> | FaqSelect<true>;
+    inventory: InventorySelect<false> | InventorySelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'contact-form': ContactFormSelect<false> | ContactFormSelect<true>;
     owners: OwnersSelect<false> | OwnersSelect<true>;
     pets: PetsSelect<false> | PetsSelect<true>;
-    appointments: AppointmentsSelect<false> | AppointmentsSelect<true>;
+    services: ServicesSelect<false> | ServicesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -259,10 +261,44 @@ export interface Faq {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory".
+ */
+export interface Inventory {
+  id: number;
+  /**
+   * Unique identifier for the item
+   */
+  sku: string;
+  name: string;
+  description?: string | null;
+  category?: string | null;
+  unitCost?: number | null;
+  trackStock?: boolean | null;
+  /**
+   * Total available units
+   */
+  quantity?: number | null;
+  reorderLevel?: number | null;
+  status?: ('active' | 'inactive' | 'archived') | null;
+  supplier?: string | null;
+  location?: string | null;
+  barcode?: string | null;
+  serialNumber?: string | null;
+  images?: (number | Media)[] | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
 export interface Product {
   id: number;
+  /**
+   * Link a product to an internal inventory item to inherit name, description, images and stock status
+   */
+  inventoryItem?: (number | null) | Inventory;
   name: string;
   description?: string | null;
   price?: number | null;
@@ -285,7 +321,9 @@ export interface ContactForm {
   email: string;
   phone: string;
   message: string;
-  contactPreference?: ('email' | 'phone') | null;
+  contactPreference: 'email' | 'phone';
+  spam: boolean;
+  answered: boolean;
   updatedAt: string;
   createdAt: string;
 }
@@ -329,18 +367,14 @@ export interface Pet {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "appointments".
+ * via the `definition` "services".
  */
-export interface Appointment {
+export interface Service {
   id: number;
-  nombre: string;
-  tipo: string;
-  servicio: string;
-  fecha: string;
-  hora: string;
-  total: number;
-  estado: 'Pendiente' | 'Completado' | 'Cancelado';
-  dueño: string;
+  title: string;
+  description?: string | null;
+  price: number;
+  icon?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -368,6 +402,10 @@ export interface PayloadLockedDocument {
         value: number | Faq;
       } | null)
     | ({
+        relationTo: 'inventory';
+        value: number | Inventory;
+      } | null)
+    | ({
         relationTo: 'products';
         value: number | Product;
       } | null)
@@ -384,8 +422,8 @@ export interface PayloadLockedDocument {
         value: number | Pet;
       } | null)
     | ({
-        relationTo: 'appointments';
-        value: number | Appointment;
+        relationTo: 'services';
+        value: number | Service;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -569,9 +607,33 @@ export interface FaqSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory_select".
+ */
+export interface InventorySelect<T extends boolean = true> {
+  sku?: T;
+  name?: T;
+  description?: T;
+  category?: T;
+  unitCost?: T;
+  trackStock?: T;
+  quantity?: T;
+  reorderLevel?: T;
+  status?: T;
+  supplier?: T;
+  location?: T;
+  barcode?: T;
+  serialNumber?: T;
+  images?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
+  inventoryItem?: T;
   name?: T;
   description?: T;
   price?: T;
@@ -591,6 +653,8 @@ export interface ContactFormSelect<T extends boolean = true> {
   phone?: T;
   message?: T;
   contactPreference?: T;
+  spam?: T;
+  answered?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -629,17 +693,13 @@ export interface PetsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "appointments_select".
+ * via the `definition` "services_select".
  */
-export interface AppointmentsSelect<T extends boolean = true> {
-  nombre?: T;
-  tipo?: T;
-  servicio?: T;
-  fecha?: T;
-  hora?: T;
-  total?: T;
-  estado?: T;
-  dueño?: T;
+export interface ServicesSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  price?: T;
+  icon?: T;
   updatedAt?: T;
   createdAt?: T;
 }
