@@ -1,8 +1,24 @@
-import { getBusinessHoursData } from '../api-server'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 import HorasContent from './horas-content'
 
-export default async function HorasPage() {
-  const initialHours = await getBusinessHoursData()
+async function getAppointmentsData() {
+  try {
+    const payload = await getPayload({ config: await configPromise })
+    const appointments = await payload.find({
+      collection: 'appointments',
+      limit: 1000,
+      sort: 'fecha',
+    })
+    return appointments.docs || appointments
+  } catch (error) {
+    console.error('Error fetching appointments:', error)
+    return []
+  }
+}
 
-  return <HorasContent initialData={initialHours} />
+export default async function HorasPage() {
+  const initialAppointments = await getAppointmentsData()
+
+  return <HorasContent initialData={initialAppointments} />
 }
