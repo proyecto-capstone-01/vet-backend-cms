@@ -38,7 +38,15 @@ export default function ClientesContent({ initialData }: ClientesContentProps) {
 
   return (
     <div className="p-6 space-y-6">
-      <StatCard title="Total Clientes" value={data.length} description={''} />
+      <div className="flex justify-center">
+        <div className="w-full max-w-xs">
+          <StatCard 
+            title="Total Clientes" 
+            value={data.length.toString()} 
+            description={'Total de clientes registrados en el sistema.'} 
+          />
+        </div>
+      </div>
       <GenericDataTable 
         columns={columns}
         data={data}
