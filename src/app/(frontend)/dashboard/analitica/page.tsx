@@ -31,7 +31,7 @@ export default function DashboardPage() {
     <div className="@container flex flex-col gap-6 p-6">
       
       {/* === Tarjetas de estadísticas === */}
-      <div className="grid grid-cols-1 gap-6 @md:grid-cols-2 @4xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Ingresos Totales"
           description="Ingresos totales de este mes"
@@ -75,7 +75,7 @@ export default function DashboardPage() {
       </div>
 
       {/* === Gráficos de Pastel === */}
-      <div className="grid grid-cols-1 gap-6 @lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         <GenericPieChart
           title="Visitas por Mascota"
           description="Distribución por tipo de mascota."
