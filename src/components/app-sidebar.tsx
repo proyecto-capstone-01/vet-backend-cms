@@ -84,6 +84,12 @@ const data = {
       url: "/dashboard/inventario",
       items: [{ title: "Tabla con Productos", url: "/dashboard/inventario" }],
     },
+    {
+      title: "Contactos",
+      icon: IconClipboardList,
+      url: "/dashboard/solicitudes-contacto",
+      items: [{ title: "Listado de Contactos", url: "/dashboard/solicitudes-contacto" }],
+    }
   ],
 
   documents: [
