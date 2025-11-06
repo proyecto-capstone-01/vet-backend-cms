@@ -9,7 +9,6 @@ export const Owners: CollectionConfig = {
     useAsTitle: 'nameRutCombination',
   },
   access: {
-    read: authenticated,
     update: isDashboardUser,
     create: isDashboardUser,
     delete: isAdmin,
