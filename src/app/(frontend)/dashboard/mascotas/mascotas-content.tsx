@@ -58,7 +58,15 @@ export default function MascotasContent({ initialData }: MascotasContentProps) {
 
   return (
     <div className="p-6 space-y-6">
-      <StatCard title="Total Mascotas" value={data.length} description={''} />
+      <div className="flex justify-center">
+        <div className="w-full max-w-xs">
+          <StatCard 
+            title="Total Mascotas" 
+            value={data.length} 
+            description={'Total de mascotas registrados en el sistema.'} 
+          />
+        </div>
+      </div>
       <GenericDataTable 
         columns={columns}
         data={data}

@@ -6,13 +6,62 @@ import { StatCard } from '@/components/StatCard'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { ColumnDef } from '@tanstack/react-table'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface DashboardContentProps {
   initialData: any[]
 }
 
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString)
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  const day = String(localDate.getDate()).padStart(2, '0')
+  const month = String(localDate.getMonth() + 1).padStart(2, '0')
+  const year = localDate.getFullYear()
+  return `${day}-${month}-${year}`
+}
+
+const getDateOnly = (dateString: string): Date => {
+  const date = new Date(dateString)
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  return new Date(localDate.getFullYear(), localDate.getMonth(), localDate.getDate())
+}
+
+const isToday = (dateString: string): boolean => {
+  const appointmentDate = getDateOnly(dateString)
+  const today = new Date()
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  return appointmentDate.getTime() === todayDate.getTime()
+}
+
 export default function DashboardContent({ initialData }: DashboardContentProps) {
-  const { data, handleConfirm, handleReject } = useAppointments(initialData)
+  const { data, loading, handleConfirm, handleReject } = useAppointments(initialData)
+  const [processingId, setProcessingId] = useState<string | null>(null)
+
+  const handleConfirmClick = async (id: string) => {
+    setProcessingId(id)
+    try {
+      await handleConfirm(id)
+      toast.success('Cita confirmada')
+    } catch (err) {
+      toast.error('Error al confirmar cita')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleRejectClick = async (id: string) => {
+    setProcessingId(id)
+    try {
+      await handleReject(id)
+      toast.success('Cita rechazada')
+    } catch (err) {
+      toast.error('Error al rechazar cita')
+    } finally {
+      setProcessingId(null)
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
@@ -27,7 +76,14 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
     { accessorKey: 'nombre', header: 'Mascota' },
     { accessorKey: 'tipo', header: 'Tipo' },
     { accessorKey: 'servicio', header: 'Servicio' },
-    { accessorKey: 'fecha', header: 'Fecha' },
+    {
+      accessorKey: 'fecha',
+      header: 'Fecha',
+      cell: ({ getValue }) => {
+        const value = getValue<string>()
+        return formatDate(value)
+      },
+    },
     { accessorKey: 'hora', header: 'Hora' },
     { accessorKey: 'total', header: 'Total' },
     {
@@ -48,23 +104,24 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
       header: 'Acciones',
       cell: ({ row }) => {
         const original = row.original as any
+        const isProcessing = processingId === original.id
         return (
           <div className="flex gap-2">
             <Button
               size="sm"
               variant="default"
-              onClick={() => handleConfirm(original.id)}
-              disabled={original.estado !== 'Pendiente'}
+              onClick={() => handleConfirmClick(original.id)}
+              disabled={original.estado !== 'Pendiente' || loading || isProcessing}
             >
-              Confirmar
+              {isProcessing ? 'Confirmando...' : 'Confirmar'}
             </Button>
             <Button
               size="sm"
               variant="destructive"
-              onClick={() => handleReject(original.id)}
-              disabled={original.estado !== 'Pendiente'}
+              onClick={() => handleRejectClick(original.id)}
+              disabled={original.estado !== 'Pendiente' || loading || isProcessing}
             >
-              Rechazar
+              {isProcessing ? 'Rechazando...' : 'Rechazar'}
             </Button>
           </div>
         )
@@ -72,10 +129,12 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
     },
   ]
 
-  const horasConfirmadas = data.filter(
+  const datosHoy = data.filter((item) => isToday(item.fecha))
+  
+  const horasConfirmadas = datosHoy.filter(
     (item) => item.estado === 'Completado' || item.estado === 'Cancelado',
   )
-  const horasPendientes = data.filter((item) => item.estado === 'Pendiente')
+  const horasPendientes = datosHoy.filter((item) => item.estado === 'Pendiente')
 
   return (
     <div className="@container/main flex flex-1 flex-col gap-6 py-6 px-4 md:px-6">
@@ -83,7 +142,7 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
         <StatCard
           title="Horas Agendadas Hoy"
           description="Total de horas agendadas para hoy"
-          value={data.length.toString()}
+          value={datosHoy.length.toString()}
         />
         <StatCard
           title="Servicios Completados"
