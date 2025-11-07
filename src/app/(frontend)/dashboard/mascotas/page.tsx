@@ -1,7 +1,8 @@
-export default function MascotasPage() {
-    return (
-        <div>
-            <h1 className="text-2xl font-bold">Mascotas</h1>
-        </div>
-    )
+import { getPetsData } from '../api-server'
+import MascotasContent from './mascotas-content'
+
+export default async function MascotasPage() {
+  const initialPets = await getPetsData()
+
+  return <MascotasContent initialData={initialPets} />
 }

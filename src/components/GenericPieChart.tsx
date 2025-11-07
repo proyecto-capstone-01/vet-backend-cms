@@ -34,7 +34,8 @@ export function GenericPieChart({
     data,
 }: GenericPieChartProps) {
 
-    return (
+
+  return (
         <Card className="@container/card">
         <CardHeader className="items-center pb-0">
             <CardTitle>{title}</CardTitle>
@@ -46,6 +47,7 @@ export function GenericPieChart({
         </CardHeader>
 
         <div className="flex justify-center p-4"> {/* Contenedor para centrar el gráfico */}
+          {/*// @ts-ignore*/}
             <ChartContainer
             config={Object.fromEntries(
                 data.map((item) => [item.name, { label: item.name, color: item.fill }])

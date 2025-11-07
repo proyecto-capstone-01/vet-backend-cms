@@ -48,6 +48,7 @@ export const ContactForm: CollectionConfig = {
       name: 'message',
       type: 'textarea',
       required: true,
+      maxLength: 1000,
       label: {
         en: 'Message',
         es: 'Mensaje'
@@ -57,6 +58,7 @@ export const ContactForm: CollectionConfig = {
       name: 'contactPreference',
       type: 'radio',
       defaultValue: 'phone',
+      required: true,
       options: [
         {
           value: 'email',
@@ -78,8 +80,32 @@ export const ContactForm: CollectionConfig = {
         es: 'Preferencia de contacto'
       }
     },
+    {
+      name: 'spam',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        hidden: true
+      },
+      required: true,
+      label: {
+        en: 'Spam',
+        es: 'Spam'
+      }
+    },
+    {
+      name: 'answered',
+      type: 'checkbox',
+      defaultValue: false,
+      required: true,
+      label: {
+        en: 'Answered',
+        es: 'Respondido'
+      }
+    }
   ],
-  hooks: {},
+  hooks: {
+  },
   labels: {
     singular: {
       en: 'contact form submission',

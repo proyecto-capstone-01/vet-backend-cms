@@ -8,7 +8,7 @@ import {
   IconUsers,
   IconDog,
   IconPackage,
-  IconFileText, // <--- Icono ya importado, listo para usar
+  IconFileText,
   IconDatabase,
   IconFiles,
   IconFileWord,
@@ -25,11 +25,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { usePathname } from "next/navigation"
 
 import { NavMain } from "@/components/nav-main"
 import { NavDocuments } from "@/components/nav-documents"
 
-// ... (tu objeto 'data' permanece igual)
 const data = {
   navMain: [
     {
@@ -84,6 +84,12 @@ const data = {
       url: "/dashboard/inventario",
       items: [{ title: "Tabla con Productos", url: "/dashboard/inventario" }],
     },
+    {
+      title: "Contactos",
+      icon: IconClipboardList,
+      url: "/dashboard/solicitudes-contacto",
+      items: [{ title: "Listado de Contactos", url: "/dashboard/solicitudes-contacto" }],
+    }
   ],
 
   documents: [
@@ -124,6 +130,8 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname()
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       {/* HEADER */}
@@ -153,18 +161,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       {/* CONTENIDO */}
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <NavMain items={data.navMain} activePath={pathname} />
+        <NavDocuments items={data.documents} activePath={pathname} />
       </SidebarContent>
 
-      {/* FOOTER - Botón Manual de Usuario */}
+      {/* FOOTER */}
       <SidebarFooter className="mt-auto border-t border-border pt-3">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <a
-                href="/dashboard/manual-usuario"
-                className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                href="/dashboard/manualdeusuario"
+                className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+                  pathname === "/dashboard/manual-usuario"
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 <IconBook className="size-4" />
                 Manual de Usuario

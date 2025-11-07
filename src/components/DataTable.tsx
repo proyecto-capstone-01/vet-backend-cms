@@ -18,7 +18,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -40,7 +39,9 @@ import {
   IconChevronsRight,
   IconLayoutColumns,
   IconChevronDown,
+  IconSearch,
 } from "@tabler/icons-react"
+import { Input } from "@/components/ui/input"
 
 interface GenericDataTableProps<TData> {
   columns: ColumnDef<TData, any>[]
@@ -49,6 +50,7 @@ interface GenericDataTableProps<TData> {
   enableRowSelection?: boolean
   enableColumnVisibility?: boolean
   title?: string
+  enableSearch?: boolean // Nuevo prop (por defecto: true)
 }
 
 export function GenericDataTable<TData>({
@@ -58,14 +60,28 @@ export function GenericDataTable<TData>({
   enableRowSelection = true,
   enableColumnVisibility = true,
   title,
+  enableSearch = true,
 }: GenericDataTableProps<TData>) {
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
   })
 
+  const [globalFilter, setGlobalFilter] = React.useState("")
+
+  // Filtrado global — busca en todas las columnas visibles
+  const filteredData = React.useMemo(() => {
+    if (!globalFilter) return data
+    const search = globalFilter.toLowerCase()
+    return data.filter((row: any) =>
+      Object.values(row).some((value) =>
+        String(value).toLowerCase().includes(search)
+      )
+    )
+  }, [data, globalFilter])
+
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     state: { pagination },
     onPaginationChange: setPagination,
@@ -77,16 +93,31 @@ export function GenericDataTable<TData>({
   return (
     <div className="flex flex-col gap-4 w-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 lg:px-6">
-        {title && <h2 className="font-semibold text-lg">{title}</h2>}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 lg:px-6">
         <div className="flex items-center gap-2">
+          {title && <h2 className="font-semibold text-lg">{title}</h2>}
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap justify-between">
+          {enableSearch && (
+            <div className="relative">
+              <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar..."
+                value={globalFilter}
+                onChange={(e) => setGlobalFilter(e.target.value)}
+                className="pl-8 w-56 md:w-64"
+              />
+            </div>
+          )}
+
           {enableColumnVisibility && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <IconLayoutColumns />
-                  <span className="hidden lg:inline">Personalizar Columnas</span>
-                  <IconChevronDown />
+                  <IconLayoutColumns className="mr-1 h-4 w-4" />
+                  <span className="hidden lg:inline">Columnas</span>
+                  <IconChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -134,7 +165,6 @@ export function GenericDataTable<TData>({
                       key={cell.id}
                       className="max-w-xs overflow-hidden whitespace-nowrap text-ellipsis"
                     >
-                      {/* Para celdas con textos largos tipo descripción */}
                       {typeof flexRender(cell.column.columnDef.cell, cell.getContext()) === "string" ? (
                         <span className="truncate block">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -160,13 +190,13 @@ export function GenericDataTable<TData>({
       {/* Footer */}
       <div className="flex items-center justify-between px-4">
         <div className="text-muted-foreground text-sm hidden lg:block">
-          Mostrando{ " " }
+          Mostrando{" "}
           {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–{" "}
           {Math.min(
             (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            data.length
+            filteredData.length
           )}{" "}
-          de {data.length} 
+          de {filteredData.length}
         </div>
 
         <div className="flex items-center gap-8">

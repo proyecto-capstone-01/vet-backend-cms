@@ -6,7 +6,6 @@ import { isServer, isServerOrRoles } from '@/access/isServer'
 export const Pets: CollectionConfig = {
   slug: 'pets',
   access: {
-    read: isServerOrRoles(['dashboard', 'admin']),
     update: isDashboardUser,
     create: isDashboardUser,
     delete: isAdmin,

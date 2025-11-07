@@ -1,7 +1,8 @@
-export default function ClientesPage() {
-    return (
-        <div>
-            <h1 className="text-2xl font-bold">Clientes</h1>
-        </div>
-    )
+import { getOwnersData } from '../api-server'
+import ClientesContent from './clientes-content'
+
+export default async function ClientesPage() {
+  const initialOwners = await getOwnersData()
+
+  return <ClientesContent initialData={initialOwners} />
 }
