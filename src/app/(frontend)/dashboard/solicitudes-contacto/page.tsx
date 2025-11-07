@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Copy } from "lucide-react"
 
 interface Contact {
   id: number
@@ -56,14 +57,16 @@ export default function ContactosPage() {
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null)
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [filter, setFilter] = React.useState<"todos" | "sin responder" | "respondido" | "spam">("todos")
+  const [copied, setCopied] = React.useState(false)
 
   const filteredContacts = contactos.filter((c) =>
-    filter === "todos" ? true : c.estado === filter
+    filter === "todos" ? true : c.estado.toLowerCase() === filter
   )
 
   const handleOpenDialog = (contact: Contact) => {
     setSelectedContact(contact)
     setIsDialogOpen(true)
+    setCopied(false)
   }
 
   const handleMarkAs = (nuevoEstado: "respondido" | "spam") => {
@@ -80,6 +83,14 @@ export default function ContactosPage() {
     if (!selectedContact) return
     setContactos((prev) => prev.filter((c) => c.id !== selectedContact.id))
     setIsDialogOpen(false)
+  }
+
+  const handleCopyEmail = async () => {
+    if (selectedContact?.email) {
+      await navigator.clipboard.writeText(selectedContact.email)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   const columns: ColumnDef<Contact>[] = [
@@ -106,9 +117,9 @@ export default function ContactosPage() {
       cell: ({ row }) => {
         const estado = row.original.estado
         const color =
-          estado === "respondido"
+          estado === "Respondido"
             ? "text-green-600"
-            : estado === "spam"
+            : estado === "Spam"
             ? "text-red-600"
             : "text-yellow-600"
         return <span className={color}>{estado}</span>
@@ -131,7 +142,6 @@ export default function ContactosPage() {
 
   return (
     <div className="p-6 space-y-4">
-
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Contactos</h2>
         <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
@@ -154,6 +164,7 @@ export default function ContactosPage() {
         enableColumnVisibility
       />
 
+      {/* Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -165,7 +176,8 @@ export default function ContactosPage() {
               <p>
                 <strong>Nombre:</strong> {selectedContact.nombre}
               </p>
-              <p>
+
+              <p className="flex items-center gap-2">
                 <strong>Email:</strong>{" "}
                 <a
                   href={`mailto:${selectedContact.email}?subject=Respuesta%20a%20tu%20consulta&body=Hola%20${selectedContact.nombre},%0A%0AGracias%20por%20contactarnos.%20Responderemos%20tu%20mensaje%20pronto.`}
@@ -175,13 +187,27 @@ export default function ContactosPage() {
                 >
                   {selectedContact.email}
                 </a>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCopyEmail}
+                  title="Copiar correo"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                {copied && (
+                  <span className="text-xs text-green-600">¡Copiado!</span>
+                )}
               </p>
+
               <p>
                 <strong>Mensaje:</strong>
               </p>
               <p className="border p-2 rounded-md bg-muted">
                 {selectedContact.mensaje}
               </p>
+
               <p>
                 <strong>Estado:</strong>{" "}
                 <span className="capitalize">{selectedContact.estado}</span>
@@ -190,16 +216,10 @@ export default function ContactosPage() {
           )}
 
           <DialogFooter className="flex justify-between mt-4">
-            <Button
-              variant="outline"
-              onClick={() => handleMarkAs("respondido")}
-            >
+            <Button variant="outline" onClick={() => handleMarkAs("respondido")}>
               Marcar como respondido
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleMarkAs("spam")}
-            >
+            <Button variant="destructive" onClick={() => handleMarkAs("spam")}>
               Marcar como spam
             </Button>
             <Button variant="ghost" onClick={handleDelete}>
