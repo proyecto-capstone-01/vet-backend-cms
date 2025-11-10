@@ -19,15 +19,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   ToggleGroup,
-  ToggleGroupItem,
 } from "@/components/ui/toggle-group"
 import { useIsMobile } from "@/hooks/use-mobile"
 
@@ -103,21 +95,7 @@ export function GenericBarChart({
               variant="outline"
               className="hidden @[767px]/card:flex"
             >
-              <ToggleGroupItem value="90d">3 meses</ToggleGroupItem>
-              <ToggleGroupItem value="30d">30 días</ToggleGroupItem>
-              <ToggleGroupItem value="7d">7 días</ToggleGroupItem>
             </ToggleGroup>
-
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-40 @[767px]/card:hidden" size="sm">
-                <SelectValue placeholder="3 meses" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="90d">3 meses</SelectItem>
-                <SelectItem value="30d">30 días</SelectItem>
-                <SelectItem value="7d">7 días</SelectItem>
-              </SelectContent>
-            </Select>
           </CardAction>
         </div>
       </CardHeader>

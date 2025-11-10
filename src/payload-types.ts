@@ -78,6 +78,9 @@ export interface Config {
     pets: Pet;
     services: Service;
     appointments: Appointment;
+    blog: Blog;
+    'blog-categories': BlogCategory;
+    'blog-tags': BlogTag;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -95,6 +98,9 @@ export interface Config {
     pets: PetsSelect<false> | PetsSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     appointments: AppointmentsSelect<false> | AppointmentsSelect<true>;
+    blog: BlogSelect<false> | BlogSelect<true>;
+    'blog-categories': BlogCategoriesSelect<false> | BlogCategoriesSelect<true>;
+    'blog-tags': BlogTagsSelect<false> | BlogTagsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -399,6 +405,95 @@ export interface Appointment {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog".
+ */
+export interface Blog {
+  id: number;
+  title: string;
+  /**
+   * Auto-generado desde el título si está vacío
+   */
+  slug: string;
+  /**
+   * Resumen breve para listados (máx 160 caracteres)
+   */
+  excerpt?: string | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  heroImage?: (number | null) | Media;
+  /**
+   * Selecciona una o más categorías
+   */
+  categories?: (number | BlogCategory)[] | null;
+  /**
+   * Selecciona una o más etiquetas
+   */
+  tags?: (number | BlogTag)[] | null;
+  authors?: (number | User)[] | null;
+  meta?: {
+    /**
+     * Título para buscadores (aparece en navegadores)
+     */
+    title?: string | null;
+    /**
+     * Descripción para buscadores (máx 160 caracteres)
+     */
+    description?: string | null;
+    /**
+     * Imagen para redes sociales
+     */
+    image?: (number | null) | Media;
+  };
+  /**
+   * Selecciona otros posts para mostrar como relacionados. Úsalo después de crear este artículo.
+   */
+  relatedPosts?: (number | Blog)[] | null;
+  /**
+   * Fecha en que se publicó el artículo
+   */
+  publishedAt?: string | null;
+  _status?: ('draft' | 'published' | 'archived') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-categories".
+ */
+export interface BlogCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-tags".
+ */
+export interface BlogTag {
+  id: number;
+  name: string;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -447,6 +542,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'appointments';
         value: number | Appointment;
+      } | null)
+    | ({
+        relationTo: 'blog';
+        value: number | Blog;
+      } | null)
+    | ({
+        relationTo: 'blog-categories';
+        value: number | BlogCategory;
+      } | null)
+    | ({
+        relationTo: 'blog-tags';
+        value: number | BlogTag;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -739,6 +846,53 @@ export interface AppointmentsSelect<T extends boolean = true> {
   total?: T;
   estado?: T;
   dueño?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog_select".
+ */
+export interface BlogSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  content?: T;
+  heroImage?: T;
+  categories?: T;
+  tags?: T;
+  authors?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  relatedPosts?: T;
+  publishedAt?: T;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-categories_select".
+ */
+export interface BlogCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-tags_select".
+ */
+export interface BlogTagsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
   updatedAt?: T;
   createdAt?: T;
 }

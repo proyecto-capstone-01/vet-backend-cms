@@ -6,6 +6,16 @@ import { StatCard } from '@/components/StatCard'
 import { GenericAreaChart } from '@/components/GenericAreaChart'
 import { GenericPieChart } from '@/components/GenericPieChart'
 import { GenericBarChart } from '@/components/GenericBarChart'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { Card, CardHeader, CardAction } from '@/components/ui/card'
 
 interface ChartDataPoint {
   date: string
@@ -19,25 +29,29 @@ interface PetStats {
   fill: string
 }
 
+type DateRange = '7' | '30' | '90'
+
 export default function DashboardPage() {
+  const isMobile = useIsMobile()
   const [ventasData, setVentasData] = useState<ChartDataPoint[]>([])
   const [stats, setStats] = useState({
     totalIncome: '$0.00',
     newClients: 0,
     activeAccounts: 0,
-    growthRate: '0%'
+    growthRate: '0%',
   })
   const [pieChartData, setPieChartData] = useState<PetStats[]>([])
   const [serviceChartData, setServiceChartData] = useState<PetStats[]>([])
   const [productChartData, setProductChartData] = useState<PetStats[]>([])
   const [loading, setLoading] = useState(true)
   const [debug, setDebug] = useState<any>(null)
+  const [dateRange, setDateRange] = useState<DateRange>('30')
 
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
         setLoading(true)
-        
+
         const appointmentsRes = await fetch('/api/appointments?limit=1000&sort=-fecha')
         const appointmentsData = await appointmentsRes.json()
         const appointments = appointmentsData.docs || []
@@ -50,11 +64,15 @@ export default function DashboardPage() {
         const productsData = await productsRes.json()
         const products = productsData.docs || []
 
+        const filteredAppointments = filterAppointmentsByDateRange(
+          appointments,
+          parseInt(dateRange),
+        )
 
-        const chartData = generateChartData(appointments)
+        const chartData = generateChartData(filteredAppointments, parseInt(dateRange))
         setVentasData(chartData)
 
-        const totalIncome = appointments
+        const totalIncome = filteredAppointments
           .filter((apt: any) => apt.estado === 'Completado')
           .reduce((sum: number, apt: any) => sum + (apt.total || 0), 0)
 
@@ -70,27 +88,27 @@ export default function DashboardPage() {
           totalIncome: `$${totalIncome.toLocaleString('es-CL')}`,
           newClients: newClientsThisMonth,
           activeAccounts: clients.length,
-          growthRate: calculateGrowthRate(appointments).toFixed(1) + '%'
+          growthRate: calculateGrowthRate(filteredAppointments).toFixed(1) + '%',
         })
 
-        const petStats = processPetStats(appointments)
+        const petStats = processPetStats(filteredAppointments)
         setPieChartData(petStats)
 
-        const serviceStats = processServiceStats(appointments)
+        const serviceStats = processServiceStats(filteredAppointments)
         setServiceChartData(serviceStats)
 
         const productStats = processProductStats(products)
         setProductChartData(productStats)
 
         setDebug({
-          appointmentsCount: appointments.length,
+          appointmentsCount: filteredAppointments.length,
           clientsCount: clients.length,
           productsCount: products.length,
           petStats,
           serviceStats,
-          productStats
+          productStats,
+          dateRange,
         })
-
       } catch (error) {
         console.error('❌ Error fetching analytics data:', error)
       } finally {
@@ -99,19 +117,14 @@ export default function DashboardPage() {
     }
 
     fetchAnalyticsData()
-  }, [])
-
-  if (loading) {
-    return <div className="p-6">Cargando datos...</div>
-  }
+  }, [dateRange])
 
   return (
     <div className="@container flex flex-col gap-6 p-6">
-
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Ingresos Totales"
-          description="Ingresos totales de este mes"
+          description="Ingresos totales de este período"
           value={stats.totalIncome}
           trend="up"
           percent="12.5%"
@@ -151,44 +164,91 @@ export default function DashboardPage() {
         />
       </div>
 
+      <Card className="@container/card">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <span className="font-semibold text-sm self-center">Período:</span>
+
+            <CardAction className="mt-3 sm:mt-0">
+              <ToggleGroup
+                type="single"
+                value={dateRange}
+                onValueChange={(value) => value && setDateRange(value as DateRange)}
+                variant="outline"
+                className="hidden @[767px]/card:flex"
+              >
+                <ToggleGroupItem value="7">7 Días</ToggleGroupItem>
+                <ToggleGroupItem value="30">30 Días</ToggleGroupItem>
+                <ToggleGroupItem value="90">3 Meses</ToggleGroupItem>
+              </ToggleGroup>
+
+              <Select value={dateRange} onValueChange={(value) => setDateRange(value as DateRange)}>
+                <SelectTrigger className="w-40 @[767px]/card:hidden" size="sm">
+                  <SelectValue placeholder="Seleccionar período" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="7">7 Días</SelectItem>
+                  <SelectItem value="30">30 Días</SelectItem>
+                  <SelectItem value="90">3 Meses</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardAction>
+          </div>
+        </CardHeader>
+      </Card>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         <GenericPieChart
           title="Visitas por Mascota"
           description="Distribución por tipo de mascota."
-          data={pieChartData.length > 0 ? pieChartData : [{ name: 'Sin datos', value: 1, fill: 'var(--chart-1)' }]}
+          data={
+            pieChartData.length > 0
+              ? pieChartData
+              : [{ name: 'Sin datos', value: 1, fill: 'var(--chart-1)' }]
+          }
         />
         <GenericPieChart
           title="Tipos de Servicio"
           description="Servicios más solicitados."
-          data={serviceChartData.length > 0 ? serviceChartData : [{ name: 'Sin datos', value: 1, fill: 'var(--chart-2)' }]}
+          data={
+            serviceChartData.length > 0
+              ? serviceChartData
+              : [{ name: 'Sin datos', value: 1, fill: 'var(--chart-2)' }]
+          }
         />
         <GenericPieChart
           title="Ventas por Categoría"
           description="Distribución de productos."
-          data={productChartData.length > 0 ? productChartData : [{ name: 'Sin datos', value: 1, fill: 'var(--chart-1)' }]}
+          data={
+            productChartData.length > 0
+              ? productChartData
+              : [{ name: 'Sin datos', value: 1, fill: 'var(--chart-1)' }]
+          }
         />
       </div>
 
       <div className="grid grid-cols-1 gap-6 @xl:grid-cols-2">
         <GenericAreaChart
           title="Ventas Totales"
-          description="Datos combinados de los últimos 90 días"
+          description={`Datos de los últimos ${dateRange} días`}
           //@ts-ignore
           data={ventasData}
           dataKeys={[
             { key: 'online', label: 'Ventas Online', color: 'var(--primary)' },
             { key: 'tienda', label: 'Ventas en Tienda', color: 'var(--chart-2)' },
           ]}
+          hideTimeRangeSelector
         />
         <GenericAreaChart
           title="Usuarios Activos"
-          description="Citas por día"
+          description={`Citas por día (últimos ${dateRange} días)`}
           //@ts-ignore
           data={ventasData}
           dataKeys={[
             { key: 'online', label: 'Citas Online', color: 'var(--chart-3)' },
             { key: 'tienda', label: 'Citas Presenciales', color: 'var(--chart-5)' },
           ]}
+          hideTimeRangeSelector
         />
       </div>
 
@@ -212,11 +272,23 @@ export default function DashboardPage() {
   )
 }
 
-function generateChartData(appointments: any[]): ChartDataPoint[] {
-  const last90Days: ChartDataPoint[] = []
+function filterAppointmentsByDateRange(appointments: any[], days: number): any[] {
+  const now = new Date()
+  const startDate = new Date(now)
+  startDate.setDate(startDate.getDate() - days)
+
+  return appointments.filter((apt: any) => {
+    if (!apt.fecha) return false
+    const aptDate = new Date(apt.fecha)
+    return aptDate >= startDate && aptDate <= now
+  })
+}
+
+function generateChartData(appointments: any[], days: number): ChartDataPoint[] {
+  const chartData: ChartDataPoint[] = []
   const now = new Date()
 
-  for (let i = 89; i >= 0; i--) {
+  for (let i = days - 1; i >= 0; i--) {
     const date = new Date(now)
     date.setDate(date.getDate() - i)
     const dateStr = date.toISOString().split('T')[0]
@@ -227,19 +299,25 @@ function generateChartData(appointments: any[]): ChartDataPoint[] {
       return aptDate.toISOString().split('T')[0] === dateStr
     })
 
-    last90Days.push({
+    chartData.push({
       date: dateStr,
       online: Math.floor(dayAppointments.length * 0.6),
       tienda: Math.floor(dayAppointments.length * 0.4),
     })
   }
 
-  return last90Days
+  return chartData
 }
 
 function processPetStats(appointments: any[]): PetStats[] {
   const stats: Record<string, number> = {}
-  const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)']
+  const colors = [
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
+  ]
 
   appointments.forEach((apt: any) => {
     if (!apt.tipo) return
@@ -262,7 +340,13 @@ function processPetStats(appointments: any[]): PetStats[] {
 
 function processServiceStats(appointments: any[]): PetStats[] {
   const stats: Record<string, number> = {}
-  const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)']
+  const colors = [
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
+  ]
 
   appointments.forEach((apt: any) => {
     if (!apt.servicio) return
@@ -285,7 +369,13 @@ function processServiceStats(appointments: any[]): PetStats[] {
 
 function processProductStats(products: any[]): PetStats[] {
   const stats: Record<string, number> = {}
-  const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)']
+  const colors = [
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
+  ]
 
   products.forEach((product: any) => {
     const category = product.category || product.name || 'Sin categoría'
@@ -307,18 +397,21 @@ function processProductStats(products: any[]): PetStats[] {
 
 function calculateGrowthRate(appointments: any[]): number {
   const now = new Date()
-  const thisMonth = appointments.filter((apt: any) => {
+  const midpoint = new Date(now)
+  midpoint.setDate(midpoint.getDate() - Math.floor(appointments.length / 2))
+
+  const firstHalf = appointments.filter((apt: any) => {
     if (!apt.fecha) return false
     const aptDate = new Date(apt.fecha)
-    return aptDate.getMonth() === now.getMonth()
+    return aptDate <= midpoint
   }).length
 
-  const lastMonth = appointments.filter((apt: any) => {
+  const secondHalf = appointments.filter((apt: any) => {
     if (!apt.fecha) return false
     const aptDate = new Date(apt.fecha)
-    return aptDate.getMonth() === now.getMonth() - 1
+    return aptDate > midpoint
   }).length
 
-  if (lastMonth === 0) return 0
-  return ((thisMonth - lastMonth) / lastMonth) * 100
+  if (firstHalf === 0) return 0
+  return ((secondHalf - firstHalf) / firstHalf) * 100
 }
