@@ -103,27 +103,27 @@ const data = {
     },
     {
       name: "Contenido Multimedia",
-      url: "/admin/media",
+      url: "/admin/collections/media",
       icon: IconFiles,
     },
     {
       name: "Publicaciones del Blog",
-      url: "/admin/blogpost",
+      url: "/admin/collections/blog",
       icon: IconFileWord,
     },
     {
       name: "Productos",
-      url: "/admin/collection/product",
+      url: "/admin/collections/products",
       icon: IconListDetails,
     },
     {
       name: "Profesionales",
-      url: "/admin/collection/professional",
+      url: "/admin/collections/team",
       icon: IconUsers,
     },
     {
       name: "Preguntas Frecuentes",
-      url: "/admin/collection/faq",
+      url: "/admin/collections/faq",
       icon: IconHelpCircle,
     },
   ],
