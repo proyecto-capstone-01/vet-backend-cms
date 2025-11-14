@@ -8,6 +8,10 @@ export const Blog: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     group: 'Blog',
+    defaultColumns: ['title', '_status', 'publishedAt', 'authors'],
+    preview: (doc) => {
+      return `${process.env.PAYLOAD_PUBLIC_SERVER_URL}/blog/${doc?.slug}`
+    },
   },
   access: {
     read: anyone,
@@ -15,8 +19,26 @@ export const Blog: CollectionConfig = {
     update: authenticated,
     delete: isAdmin,
   },
+  hooks: {
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        if (operation === 'create' && (!data.authors || data.authors.length === 0)) {
+          if (req.user?.id) {
+            data.authors = [req.user.id]
+          }
+        }
+        return data
+      },
+    ],
+  },
+  versions: {
+    drafts: {
+      autosave: {
+        interval: 1000,
+      },
+    },
+  },
   fields: [
-    // SECCIÓN 1: INFORMACIÓN BÁSICA
     {
       type: 'tabs',
       tabs: [
@@ -33,7 +55,7 @@ export const Blog: CollectionConfig = {
               name: 'slug',
               type: 'text',
               label: 'URL amigable (slug)',
-              required: true,
+              required: false,
               unique: true,
               admin: {
                 description: 'Auto-generado desde el título si está vacío',
@@ -95,6 +117,9 @@ export const Blog: CollectionConfig = {
               hasMany: true,
               label: 'Autores',
               required: false,
+              admin: {
+                description: 'Se asigna automáticamente al usuario actual al crear',
+              },
             },
           ],
         },
@@ -161,7 +186,7 @@ export const Blog: CollectionConfig = {
               name: 'publishedAt',
               type: 'date',
               label: 'Fecha de Publicación',
-              required: false,
+              required: true,
               admin: {
                 description: 'Fecha en que se publicó el artículo',
               },
@@ -171,6 +196,7 @@ export const Blog: CollectionConfig = {
               type: 'select',
               defaultValue: 'draft',
               label: 'Estado',
+              required: true,
               options: [
                 {
                   label: 'Borrador',
