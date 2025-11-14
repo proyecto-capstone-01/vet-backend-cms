@@ -145,6 +145,7 @@ export interface User {
   id: number;
   firstName: string;
   lastName: string;
+  fullName?: string | null;
   roles: ('admin' | 'editor' | 'blogger' | 'webEditor' | 'dashboard')[];
   updatedAt: string;
   createdAt: string;
@@ -413,7 +414,7 @@ export interface Blog {
   /**
    * Auto-generado desde el título si está vacío
    */
-  slug: string;
+  slug?: string | null;
   /**
    * Resumen breve para listados (máx 160 caracteres)
    */
@@ -442,6 +443,9 @@ export interface Blog {
    * Selecciona una o más etiquetas
    */
   tags?: (number | BlogTag)[] | null;
+  /**
+   * Se asigna automáticamente al usuario actual al crear
+   */
   authors?: (number | User)[] | null;
   meta?: {
     /**
@@ -464,8 +468,8 @@ export interface Blog {
   /**
    * Fecha en que se publicó el artículo
    */
-  publishedAt?: string | null;
-  _status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt: string;
+  _status: ('draft' | 'published') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -604,6 +608,7 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
+  fullName?: T;
   roles?: T;
   updatedAt?: T;
   createdAt?: T;
