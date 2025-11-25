@@ -16,7 +16,7 @@ export default function HorasContent({ initialData }: HorasContentProps) {
   const { data } = useAppointments(initialData)
   const [selectedWeekStart, setSelectedWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }))
   const [selectedMonth, setSelectedMonth] = useState(new Date())
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week')
+  const [viewMode, setViewMode] = useState<'month' | 'week'>('month')
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(selectedWeekStart, i))
 
@@ -86,7 +86,7 @@ export default function HorasContent({ initialData }: HorasContentProps) {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-5">
       {/* View Toggle Buttons */}
       <div className="flex gap-2">
         <Button
