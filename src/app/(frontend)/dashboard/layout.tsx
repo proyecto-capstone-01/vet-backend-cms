@@ -19,8 +19,19 @@ export default async function DashboardLayout({
   const roles = user?.roles || []
   const isAuthorized = roles.includes("admin") || roles.includes("dashboard")
 
+  console.log(user)
+
   if (!isAuthorized) {
     redirect("/unauthorized")
+  } else if (!user) {
+    redirect("/login")
+  }
+
+  const userProp = {
+    name: user.firstName + " " + user.lastName,
+    email: user.email,
+    // @ts-ignore
+    avatarUrl: user.profileImage?.sizes?.square?.url.toString(),
   }
 
   return (
@@ -28,7 +39,7 @@ export default async function DashboardLayout({
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader user={userProp} />
         <div className="flex flex-1 flex-col">{children}</div>
       </SidebarInset>
     </SidebarProvider>

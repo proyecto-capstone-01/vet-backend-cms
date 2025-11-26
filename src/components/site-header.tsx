@@ -28,15 +28,19 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 
-export function SiteHeader() {
+interface SiteHeaderProps {
+  user: {
+    name: string
+    email: string
+    avatarUrl?: string
+  }
+}
+
+export function SiteHeader(
+  { user }: SiteHeaderProps,
+) {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
-
-  const user = {
-    name: "Admin",
-    email: "admin@clinic.com",
-    avatar: "/avatars/shadcn.jpg",
-  }
 
   const getPageTitle = () => {
     if (!pathname) return "Dashboard"
@@ -91,7 +95,7 @@ export function SiteHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Avatar className="h-8 w-8 rounded-lg grayscale">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={user.avatarUrl || '/icon.png'} alt={user.name} />
                   <AvatarFallback className="rounded-lg">
                     {user.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -103,7 +107,7 @@ export function SiteHeader() {
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarImage src={user.avatarUrl || '/icon.png'} alt={user.name} />
                     <AvatarFallback className="rounded-lg">
                       {user.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
