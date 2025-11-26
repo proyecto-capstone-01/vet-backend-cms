@@ -146,6 +146,7 @@ export interface User {
   firstName: string;
   lastName: string;
   roles: ('admin' | 'editor' | 'blogger' | 'webEditor' | 'dashboard')[];
+  profileImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -174,6 +175,7 @@ export interface Media {
    * A short description of the image or file.
    */
   alt: string;
+  _key?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -187,6 +189,7 @@ export interface Media {
   focalY?: number | null;
   sizes?: {
     thumbnail?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -195,6 +198,7 @@ export interface Media {
       filename?: string | null;
     };
     square?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -203,6 +207,7 @@ export interface Media {
       filename?: string | null;
     };
     small?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -211,6 +216,7 @@ export interface Media {
       filename?: string | null;
     };
     medium?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -219,6 +225,7 @@ export interface Media {
       filename?: string | null;
     };
     large?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -227,6 +234,7 @@ export interface Media {
       filename?: string | null;
     };
     xlarge?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -235,6 +243,7 @@ export interface Media {
       filename?: string | null;
     };
     og?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -370,6 +379,11 @@ export interface Pet {
   breed?: string | null;
   weight?: number | null;
   height?: number | null;
+  notes?: string | null;
+  /**
+   * Upload photos of the pet
+   */
+  photos?: (number | Media)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -381,7 +395,7 @@ export interface Service {
   id: number;
   title: string;
   description?: string | null;
-  price: number;
+  price?: number | null;
   icon?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
@@ -392,14 +406,13 @@ export interface Service {
  */
 export interface Appointment {
   id: number;
-  nombre: string;
-  tipo: string;
-  servicio: string;
-  fecha: string;
-  hora: string;
-  total: number;
-  estado: 'Pendiente' | 'Completado' | 'Cancelado';
-  dueño: string;
+  petId: number | Pet;
+  date: string;
+  time: string;
+  services: (number | Service)[];
+  comment?: string | null;
+  safeId: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'canceled';
   updatedAt: string;
   createdAt: string;
 }
@@ -605,6 +618,7 @@ export interface UsersSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
   roles?: T;
+  profileImage?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -628,6 +642,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  _key?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -645,6 +660,7 @@ export interface MediaSelect<T extends boolean = true> {
         thumbnail?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -655,6 +671,7 @@ export interface MediaSelect<T extends boolean = true> {
         square?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -665,6 +682,7 @@ export interface MediaSelect<T extends boolean = true> {
         small?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -675,6 +693,7 @@ export interface MediaSelect<T extends boolean = true> {
         medium?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -685,6 +704,7 @@ export interface MediaSelect<T extends boolean = true> {
         large?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -695,6 +715,7 @@ export interface MediaSelect<T extends boolean = true> {
         xlarge?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -705,6 +726,7 @@ export interface MediaSelect<T extends boolean = true> {
         og?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -818,6 +840,8 @@ export interface PetsSelect<T extends boolean = true> {
   breed?: T;
   weight?: T;
   height?: T;
+  notes?: T;
+  photos?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -838,14 +862,13 @@ export interface ServicesSelect<T extends boolean = true> {
  * via the `definition` "appointments_select".
  */
 export interface AppointmentsSelect<T extends boolean = true> {
-  nombre?: T;
-  tipo?: T;
-  servicio?: T;
-  fecha?: T;
-  hora?: T;
-  total?: T;
-  estado?: T;
-  dueño?: T;
+  petId?: T;
+  date?: T;
+  time?: T;
+  services?: T;
+  comment?: T;
+  safeId?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

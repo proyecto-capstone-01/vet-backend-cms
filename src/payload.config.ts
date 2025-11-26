@@ -1,6 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
-// import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
-// import { s3Storage } from '@payloadcms/storage-s3'
+import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
 import { resendAdapter } from '@payloadcms/email-resend'
 
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
@@ -33,7 +32,6 @@ import { BlogTags } from '@/collections/BlogTags'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-// const storageEnv= process.env.STORAGE_ENV || 'local'
 
 export default buildConfig({
   admin: {
@@ -53,6 +51,7 @@ export default buildConfig({
       'http://localhost:3000',
       'http://localhost:4321',
       'http://127.0.0.1:3000',
+      'https://*.veterinariapucara.cl',
     ],
   },
   email: resendAdapter({
@@ -63,7 +62,7 @@ export default buildConfig({
   i18n: {
     fallbackLanguage: 'es',
     supportedLanguages: { es, en },
-    translations: customTranslations
+    translations: customTranslations,
   },
   collections: [
     Users,
@@ -94,31 +93,15 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
+    uploadthingStorage({
+      collections: {
+        media: true,
+      },
+      options: {
+        token: process.env.UPLOADTHING_TOKEN,
+        acl: 'public-read',
+      },
+    }),
     payloadCloudPlugin(),
-    // vercelBlobStorage({
-    //   enabled: storageEnv === 'vercel',
-    //   // Specify which collections should use Vercel Blob
-    //   addRandomSuffix: true,
-    //   collections: {
-    //     media: true,
-    //   },
-    //   // Token provided by Vercel once Blob storage is added to your Vercel project
-    //   token: process.env.BLOB_READ_WRITE_TOKEN,
-    // }),
-    // s3Storage({
-    //   enabled: storageEnv === 's3',
-    //   collections: {
-    //     media: true,
-    //   },
-    //   bucket: process.env.S3_BUCKET || '',
-    //   config: {
-    //     credentials: {
-    //       accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-    //       secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-    //     },
-    //     region: process.env.S3_REGION,
-    //     // ... Other S3 configuration
-    //   },
-    // }),
   ],
 })
