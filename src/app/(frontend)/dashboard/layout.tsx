@@ -19,8 +19,6 @@ export default async function DashboardLayout({
   const roles = user?.roles || []
   const isAuthorized = roles.includes("admin") || roles.includes("dashboard")
 
-  console.log(user)
-
   if (!isAuthorized) {
     redirect("/unauthorized")
   } else if (!user) {

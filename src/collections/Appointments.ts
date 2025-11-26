@@ -20,7 +20,7 @@ export const Appointments: CollectionConfig = {
   },
   fields: [
     {
-      name: 'petId',
+      name: 'pet',
       type: 'relationship',
       relationTo: 'pets',
       label: 'Mascota',
