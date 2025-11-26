@@ -55,26 +55,7 @@ export const POST = async (request: Request) => {
     return new Response(`Missing: ${missing.join(', ')}`, { status: 400, headers: corsHeaders(origin) })
   }
 
-  const ownerData = {
-    rut: cleanRut(data.rut),
-    firstName: data.firstName,
-    lastName: data.lastName,
-    email: data.email ?? undefined,
-    phoneNumber: data.phone,
-  }
-
-  // Upsert owner by rut OR email OR phoneNumber
-  const owner = await upsertOwner(payload, ownerData)
-
-  // Upsert pet by owner + (name + species + sex)
-  const pet = await upsertPet(payload, {
-    owner: owner.id,
-    name: data.petName,
-    species: data.petType,
-    sex: data.petSex,
-  })
-
-  // Validate requested slot
+  // Parse and validate the requested slot BEFORE any writes
   const dateISO = new Date(data.date).toISOString()
   const timeStr: string = data.time // expected HH:mm
   const timeDate = hhmmToDate(timeStr)
@@ -84,8 +65,42 @@ export const POST = async (request: Request) => {
     return new Response('Selected time is not available', { status: 409, headers: corsHeaders(origin) })
   }
 
-  // Create appointment
+  const ownerData = {
+    rut: cleanRut(data.rut),
+    firstName: data.firstName,
+    lastName: data.lastName,
+    email: data.email ?? undefined,
+    phoneNumber: data.phone,
+  }
+
+  // From here on, we may create data. Track what is newly created so we can roll back on any failure.
+  let createdOwnerId: string | null = null
+  let createdPetId: string | null = null
+
   try {
+    // Find or create owner (do NOT update existing here to avoid side-effects on failure)
+    const ownerRes = await upsertOwner(payload, ownerData)
+    const owner = ownerRes.doc as any
+    if (ownerRes.created) createdOwnerId = owner.id
+
+    // Find or create pet
+    const petRes = await upsertPet(payload, {
+      owner: owner.id,
+      name: data.petName,
+      species: data.petType,
+      sex: data.petSex,
+    })
+    const pet = petRes.doc as any
+    if (petRes.created) createdPetId = pet.id
+
+    // Re-validate right before booking to reduce race conditions
+    const stillAvailable = await validateSlot(payload, dateISO, timeDate)
+    if (!stillAvailable) {
+      // Throw an object we can catch to return 409 after cleanup
+      throw { status: 409, message: 'Selected time is not available' }
+    }
+
+    // Create appointment
     const appointment = await payload.create({
       collection: 'appointments',
       data: {
@@ -93,8 +108,9 @@ export const POST = async (request: Request) => {
         time: timeDate.toISOString(),
         services: data.services,
         comment: data.comentario || null,
-        pet: (pet as any).id,
+        pet: pet.id,
         status: 'pending',
+        safeId: 'apt-' + Math.random().toString(36).substr(2, 9),
       },
     })
 
@@ -103,8 +119,62 @@ export const POST = async (request: Request) => {
       headers: corsHeaders(origin),
     })
   } catch (e: any) {
-    return new Response(e?.message ?? 'Error creating appointment', { status: 500, headers: corsHeaders(origin) })
+    // Best-effort rollback of newly created docs
+    try {
+      if (createdPetId) {
+        await payload.delete({ collection: 'pets', id: createdPetId })
+      }
+    } catch {}
+    try {
+      if (createdOwnerId) {
+        await payload.delete({ collection: 'owners', id: createdOwnerId })
+      }
+    } catch {}
+
+    const status = typeof e?.status === 'number' ? e.status : 500
+    const message = e?.message ?? 'Error creating appointment'
+    return new Response(message, { status, headers: corsHeaders(origin) })
   }
+}
+
+export const GET = async (request: Request) => {
+  const origin = request.headers.get('origin') ?? ''
+  const payload = await getPayload({ config: configPromise })
+  try {
+    const res = await payload.find({ collection: 'appointments', limit: 1000, depth: 2 })
+    const translateStatus: Record<string,string> = { pending: 'Pendiente', confirmed: 'Confirmado', completed: 'Completado', canceled: 'Cancelado' }
+    const speciesMap: Record<string,string> = { dog: 'Perro', cat: 'Gato' }
+    const out = res.docs.map((doc: any) => {
+      const pet = typeof doc.pet === 'object' ? doc.pet : null
+      const owner = pet && typeof pet.owner === 'object' ? pet.owner : null
+      const services = Array.isArray(doc.services) ? doc.services : []
+      const firstServiceTitle = services[0] && typeof services[0] === 'object' ? services[0].title : undefined
+      return {
+        id: doc.id?.toString?.() ?? doc.id,
+        fecha: doc.date,
+        hora: doc.time ? formatTime(doc.time) : '',
+        estado: translateStatus[doc.status] || 'Pendiente',
+        nombre: pet?.name || 'Mascota',
+        tipo: speciesMap[pet?.species || ''] || pet?.species || '',
+        servicio: firstServiceTitle || `${services.length} servicio(s)`,
+        total: services.length.toString(),
+        dueno: owner ? `${owner.firstName} ${owner.lastName}` : '',
+        safeId: doc.safeId,
+      }
+    })
+    return new Response(JSON.stringify(out), { status: 200, headers: corsHeaders(origin) })
+  } catch (e: any) {
+    return new Response('Error fetching appointments', { status: 500, headers: corsHeaders(origin) })
+  }
+}
+
+function formatTime(iso: string) {
+  try {
+    const d = new Date(iso)
+    const hh = String(d.getUTCHours()).padStart(2,'0')
+    const mm = String(d.getUTCMinutes()).padStart(2,'0')
+    return `${hh}:${mm}`
+  } catch { return '' }
 }
 
 function hhmmToDate(hhmm: string) {
@@ -117,7 +187,7 @@ function hhmmToDate(hhmm: string) {
   return d
 }
 
-async function upsertOwner(payload: any, ownerData: any) {
+async function upsertOwner(payload: any, ownerData: any): Promise<{ doc: any; created: boolean }> {
   const where: any = { or: [] as any[] }
   if (ownerData.rut) where.or.push({ rut: { equals: ownerData.rut } })
   if (ownerData.email) where.or.push({ email: { equals: ownerData.email } })
@@ -130,12 +200,14 @@ async function upsertOwner(payload: any, ownerData: any) {
   }
 
   if (existing) {
-    return await payload.update({ collection: 'owners', id: existing.id, data: ownerData })
+    // Do not update existing owner in this flow to avoid side-effects when booking fails
+    return { doc: existing, created: false }
   }
-  return await payload.create({ collection: 'owners', data: ownerData })
+  const created = await payload.create({ collection: 'owners', data: ownerData })
+  return { doc: created, created: true }
 }
 
-async function upsertPet(payload: any, petData: any) {
+async function upsertPet(payload: any, petData: any): Promise<{ doc: any; created: boolean }> {
   const res = await payload.find({
     collection: 'pets',
     where: {
@@ -148,8 +220,9 @@ async function upsertPet(payload: any, petData: any) {
     },
     limit: 1,
   })
-  if (res.total > 0) return res.docs[0]
-  return await payload.create({ collection: 'pets', data: petData })
+  if (res.total > 0) return { doc: res.docs[0], created: false }
+  const created = await payload.create({ collection: 'pets', data: petData })
+  return { doc: created, created: true }
 }
 
 async function validateSlot(payload: any, dateISO: string, timeDate: Date) {
@@ -165,23 +238,37 @@ async function validateSlot(payload: any, dateISO: string, timeDate: Date) {
   const hours = await payload.find({ collection: 'hours', where: { dayOfWeek: { equals: dow } }, limit: 1 })
   if (hours.total === 0) return false
   const h = hours.docs[0] as any
-  const open = new Date(h.startTime)
-  const close = new Date(h.endTime)
-  if (!(timeDate >= open && timeDate < close)) return false
+
+  // Minutes since midnight in UTC for requested and bounds
+  const reqMins = timeDate.getUTCHours() * 60 + timeDate.getUTCMinutes()
+  const openDate = new Date(h.startTime)
+  const closeDate = new Date(h.endTime)
+  const openMins = openDate.getUTCHours() * 60 + openDate.getUTCMinutes()
+  const closeMins = closeDate.getUTCHours() * 60 + closeDate.getUTCMinutes()
+
+  if (!(reqMins >= openMins && reqMins < closeMins)) return false
 
   // Ensure 30-min block alignment
-  const mins = timeDate.getUTCMinutes()
-  if (mins % 30 !== 0) return false
+  if (reqMins % 30 !== 0) return false
+
+  const timeStr = `${String(timeDate.getUTCHours()).padStart(2,'0')}:${String(timeDate.getUTCMinutes()).padStart(2,'0')}`
 
   // Blocked slot
   const blocks = await payload.find({ collection: 'blocked-slots', where: { date: { equals: dateOnly } }, limit: 100 })
-  const timeStr = format(timeDate, 'HH:mm')
-  const isBlocked = blocks.docs.some((b: any) => format(new Date(b.time), 'HH:mm') === timeStr)
+  const isBlocked = blocks.docs.some((b: any) => {
+    const bt = new Date(b.time)
+    const bStr = `${String(bt.getUTCHours()).padStart(2,'0')}:${String(bt.getUTCMinutes()).padStart(2,'0')}`
+    return bStr === timeStr
+  })
   if (isBlocked) return false
 
   // Already booked
   const appts = await payload.find({ collection: 'appointments', where: { date: { equals: dateOnly } }, limit: 1000 })
-  const taken = appts.docs.some((a: any) => format(new Date(a.time), 'HH:mm') === timeStr)
+  const taken = appts.docs.some((a: any) => {
+    const at = new Date(a.time)
+    const aStr = `${String(at.getUTCHours()).padStart(2,'0')}:${String(at.getUTCMinutes()).padStart(2,'0')}`
+    return aStr === timeStr
+  })
   if (taken) return false
 
   return true

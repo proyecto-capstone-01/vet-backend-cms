@@ -13,7 +13,7 @@ export function useAppointments(initialData: any[] = []) {
 
   const refetchAppointments = async () => {
     try {
-      const response = await fetch('/api/appointments')
+      const response = await fetch('/appointments')
       if (response.ok) {
         const appointments = await response.json()
         setData(appointments)
@@ -26,18 +26,13 @@ export function useAppointments(initialData: any[] = []) {
   const handleConfirm = async (id: string) => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/appointments/${id}`, {
+      const response = await fetch(`/appointments/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: 'Completado' }),
+        body: JSON.stringify({ status: 'completed' }),
       })
-      
       if (response.ok) {
-        setData(prevData =>
-          prevData.map(item =>
-            item.id === id ? { ...item, estado: 'Completado' } : item
-          )
-        )
+        setData(prev => prev.map(item => item.id === id ? { ...item, estado: 'Completado' } : item))
         await refetchAppointments()
         return true
       } else {
@@ -56,18 +51,13 @@ export function useAppointments(initialData: any[] = []) {
   const handleReject = async (id: string) => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/appointments/${id}`, {
+      const response = await fetch(`/appointments/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: 'Cancelado' }),
+        body: JSON.stringify({ status: 'canceled' }),
       })
-      
       if (response.ok) {
-        setData(prevData =>
-          prevData.map(item =>
-            item.id === id ? { ...item, estado: 'Cancelado' } : item
-          )
-        )
+        setData(prev => prev.map(item => item.id === id ? { ...item, estado: 'Cancelado' } : item))
         await refetchAppointments()
         return true
       } else {
