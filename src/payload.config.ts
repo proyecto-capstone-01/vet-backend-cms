@@ -30,6 +30,7 @@ import { Appointments } from '@/collections/Appointments'
 import { Blog } from '@/collections/Blog'
 import { BlogCategories } from '@/collections/BlogCategories'
 import { BlogTags } from '@/collections/BlogTags'
+import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -95,30 +96,14 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // vercelBlobStorage({
-    //   enabled: storageEnv === 'vercel',
-    //   // Specify which collections should use Vercel Blob
-    //   addRandomSuffix: true,
-    //   collections: {
-    //     media: true,
-    //   },
-    //   // Token provided by Vercel once Blob storage is added to your Vercel project
-    //   token: process.env.BLOB_READ_WRITE_TOKEN,
-    // }),
-    // s3Storage({
-    //   enabled: storageEnv === 's3',
-    //   collections: {
-    //     media: true,
-    //   },
-    //   bucket: process.env.S3_BUCKET || '',
-    //   config: {
-    //     credentials: {
-    //       accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-    //       secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-    //     },
-    //     region: process.env.S3_REGION,
-    //     // ... Other S3 configuration
-    //   },
-    // }),
+    uploadthingStorage({
+      collections: {
+        media: true,
+      },
+      options: {
+        token: process.env.UPLOADTHING_TOKEN,
+        acl: 'public-read',
+      },
+    }),
   ],
 })
