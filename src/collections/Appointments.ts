@@ -3,8 +3,14 @@ import { CollectionConfig } from 'payload'
 export const Appointments: CollectionConfig = {
   slug: 'appointments',
   labels: {
-    singular: 'Cita',
-    plural: 'Citas',
+    singular: {
+      en: 'Appointment',
+      es: 'Cita',
+    },
+    plural: {
+      en: 'Appointments',
+      es: 'Citas',
+    },
   },
   access: {
     read: () => true,
@@ -14,58 +20,66 @@ export const Appointments: CollectionConfig = {
   },
   fields: [
     {
-      name: 'nombre',
-      label: 'Nombre de la Mascota',
-      type: 'text',
+      name: 'petId',
+      type: 'relationship',
+      relationTo: 'pets',
+      label: 'Mascota',
       required: true,
     },
     {
-      name: 'tipo',
-      label: 'Tipo de Mascota',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'servicio',
-      label: 'Servicio',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'fecha',
-      label: 'Fecha',
+      name: 'date',
       type: 'date',
+      label: 'Fecha',
       required: true,
     },
     {
-      name: 'hora',
+      name: 'time',
+      type: 'date',
       label: 'Hora',
+      required: true,
+      admin: {
+        date: {
+          pickerAppearance: 'timeOnly',
+        },
+      },
+    },
+    {
+      name: 'services',
+      type: 'relationship',
+      relationTo: 'services',
+      hasMany: true,
+      label: 'Servicios',
+      required: true,
+    },
+    {
+      name: 'comment',
+      type: 'textarea',
+      label: 'Comentario',
+    },
+    {
+      name: 'safeId',
       type: 'text',
+      admin: {
+        hidden: true,
+      },
       required: true,
+      unique: true,
+      defaultValue: () => {
+        return 'apt-' + Math.random().toString(36).substr(2, 9)
+      },
     },
     {
-      name: 'total',
-      label: 'Total',
-      type: 'number',
-      required: true,
-    },
-    {
-      name: 'estado',
-      label: 'Estado',
+      name: 'status',
       type: 'select',
+      label: 'Estado',
       options: [
-        { label: 'Pendiente', value: 'Pendiente' },
-        { label: 'Completado', value: 'Completado' },
-        { label: 'Cancelado', value: 'Cancelado' },
+        { label: 'Pendiente', value: 'pending' },
+        { label: 'Confirmada', value: 'confirmed' },
+        { label: 'Completada', value: 'completed' },
+        { label: 'Cancelada', value: 'canceled' },
       ],
-      defaultValue: 'Pendiente',
+      defaultValue: 'pending',
       required: true,
-    },
-    {
-      name: 'dueño',
-      label: 'Dueño',
-      type: 'text',
-      required: true,
-    },
+    }
   ],
 }

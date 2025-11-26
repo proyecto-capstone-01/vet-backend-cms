@@ -14,8 +14,8 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
     group: {
       es: 'Administración',
-      en: 'Administration'
-    }
+      en: 'Administration',
+    },
   },
   auth: true,
   fields: [
@@ -30,8 +30,8 @@ export const Users: CollectionConfig = {
           required: true,
           label: {
             en: 'First name',
-            es: 'Nombre'
-          }
+            es: 'Nombre',
+          },
         },
         {
           name: 'lastName',
@@ -41,8 +41,8 @@ export const Users: CollectionConfig = {
           required: true,
           label: {
             en: 'Last name',
-            es: 'Apellido'
-          }
+            es: 'Apellido',
+          },
         },
       ],
     },
@@ -62,40 +62,50 @@ export const Users: CollectionConfig = {
         {
           label: {
             en: 'Admin',
-            es: 'Administrador'
+            es: 'Administrador',
           },
           value: 'admin',
         },
         {
           label: {
             en: 'Editor',
-            es: 'Editor'
+            es: 'Editor',
           },
           value: 'editor',
         },
         {
           label: {
             en: 'Blogger',
-            es: 'Blogger'
+            es: 'Blogger',
           },
-          value: 'blogger'
+          value: 'blogger',
         },
         {
           label: {
             en: 'Web editor',
-            es: 'Editor web'
+            es: 'Editor web',
           },
-          value: 'webEditor'
+          value: 'webEditor',
         },
         {
           label: {
             en: 'Dashboard user',
-            es: 'Usuario del dashboard'
+            es: 'Usuario del dashboard',
           },
-          value: 'dashboard'
-        }
-      ]
+          value: 'dashboard',
+        },
+
+      ],
     },
+    {
+      name: 'profileImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: {
+        en: 'Profile Image',
+        es: 'Imagen de perfil',
+      },
+    }
   ],
   labels: {
     singular: {

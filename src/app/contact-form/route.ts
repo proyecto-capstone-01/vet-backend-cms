@@ -37,9 +37,12 @@ export const POST = async (request: Request) => {
     data,
   })
 
-  const emailClientResponse = await sendContactFormConfirmationEmail(contactForm, payload.sendEmail)
-
-  const emailInternalResponse = await sendContactFormNotificationEmail(contactForm, payload.sendEmail)
+  try {
+    const emailClientResponse = await sendContactFormConfirmationEmail(contactForm, payload.sendEmail)
+    const emailInternalResponse = await sendContactFormNotificationEmail(contactForm, payload.sendEmail)
+  } catch (error) {
+    console.error('Error sending contact form emails:', error)
+  }
 
   console.log('---')
   console.log('c:', contactForm)
