@@ -6,18 +6,37 @@ export const Users: CollectionConfig = {
   slug: 'users',
   access: {
     create: isAdmin,
-    read: isAdminOrSelf,
+    read: () => true,
+
     update: isAdminOrSelf,
     delete: isAdmin,
   },
   admin: {
-    useAsTitle: 'email',
+    useAsTitle: 'fullName',
     group: {
       es: 'Administración',
       en: 'Administration'
     }
   },
   auth: true,
+  hooks: {
+    beforeChange: [
+      async ({ data }) => {
+        if (data.firstName || data.lastName) {
+          data.fullName = `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim()
+        }
+        return data
+      },
+    ],
+    afterRead: [
+      async ({ doc }) => {
+        if (doc.firstName || doc.lastName) {
+          doc.fullName = `${doc.firstName ?? ''} ${doc.lastName ?? ''}`.trim()
+        }
+        return doc
+      },
+    ],
+  },
   fields: [
     {
       type: 'row',
@@ -31,7 +50,8 @@ export const Users: CollectionConfig = {
           label: {
             en: 'First name',
             es: 'Nombre'
-          }
+          },
+          access: { read: () => true },
         },
         {
           name: 'lastName',
@@ -42,9 +62,23 @@ export const Users: CollectionConfig = {
           label: {
             en: 'Last name',
             es: 'Apellido'
-          }
+          },
+          access: { read: () => true },
         },
       ],
+    },
+    {
+      name: 'fullName',
+      type: 'text',
+      admin: { hidden: true },
+      access: { read: () => true },
+    },
+    {
+      name: 'email',
+      type: 'email',
+      access: { 
+        read: ({ req }) => (req.user?.id === req.data?.id || req.user?.roles?.includes('admin')) ?? false
+      },
     },
     {
       name: 'roles',
@@ -54,7 +88,7 @@ export const Users: CollectionConfig = {
       defaultValue: ['dashboard'],
       required: true,
       access: {
-        // Only admins can create or update a value for this field
+        read: ({ req }) => req.user?.roles?.includes('admin') ?? false,
         create: isAdminFieldLevel,
         update: isAdminFieldLevel,
       },
@@ -95,6 +129,27 @@ export const Users: CollectionConfig = {
           value: 'dashboard'
         }
       ]
+    },
+    {
+      name: 'sessions',
+      type: 'array',
+      access: { 
+        read: ({ req }) => req.user?.roles?.includes('admin') ?? false
+      },
+      fields: [
+        {
+          name: 'id',
+          type: 'text',
+        },
+        {
+          name: 'createdAt',
+          type: 'date',
+        },
+        {
+          name: 'expiresAt',
+          type: 'date',
+        },
+      ],
     },
   ],
   labels: {
