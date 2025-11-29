@@ -29,6 +29,8 @@ import { usePathname } from "next/navigation"
 
 import { NavMain } from "@/components/nav-main"
 import { NavDocuments } from "@/components/nav-documents"
+import { Icon } from "lucide-react"
+import Image from "next/image"
 
 const data = {
   navMain: [
@@ -85,6 +87,12 @@ const data = {
       items: [{ title: "Tabla con Productos", url: "/dashboard/inventario" }],
     },
     {
+      title: "Productos",
+      Icon: IconListDetails,
+      url: "/admin/collections/products",
+      icon: IconListDetails,
+    },
+    {
       title: "Contactos",
       icon: IconClipboardList,
       url: "/dashboard/solicitudes-contacto",
@@ -103,27 +111,22 @@ const data = {
     },
     {
       name: "Contenido Multimedia",
-      url: "/admin/media",
+      url: "/admin/collections/media",
       icon: IconFiles,
     },
     {
       name: "Publicaciones del Blog",
-      url: "/admin/blogpost",
+      url: "/admin/collections/blogpost",
       icon: IconFileWord,
     },
     {
-      name: "Productos",
-      url: "/admin/collection/product",
-      icon: IconListDetails,
-    },
-    {
       name: "Profesionales",
-      url: "/admin/collection/professional",
+      url: "/admin/collections/professional",
       icon: IconUsers,
     },
     {
       name: "Preguntas Frecuentes",
-      url: "/admin/collection/faq",
+      url: "/admin/collections/faq",
       icon: IconHelpCircle,
     },
   ],
@@ -140,6 +143,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <a href="/dashboard">
+                <Image src="/icon.png" alt="Clínica Pucará Logo" width={32} height={32} />
                 <span className="text-base font-semibold">Clínica Pucará</span>
               </a>
             </SidebarMenuButton>
@@ -149,7 +153,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild>
               <a
                 href="/dashboard/recetas"
-                className="flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors duration-200 ease-linear"
+                className="flex items-center justify-center gap-2 rounded-md bg-purple-700 dark:bg-purple-900 dark:text-white px-3 py-2 text-sm font-medium text-primary-foreground transition-colors duration-200 ease-linear"
               >
                 <IconFileText className="size-4" />
                 Crear Receta

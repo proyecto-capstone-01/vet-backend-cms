@@ -8,6 +8,12 @@ import { Button } from '@/components/ui/button'
 import type { ColumnDef } from '@tanstack/react-table'
 import { useState, useMemo } from 'react'
 import { toast } from 'sonner'
+import {
+  Dialog,
+  DialogHeader,
+  DialogContent,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 interface DashboardContentProps {
   initialData: any[]
@@ -66,7 +72,10 @@ function formatTime(iso: string) {
 
 export default function DashboardContent({ initialData }: DashboardContentProps) {
   const { data, loading, handleConfirm, handleReject } = useAppointments(initialData)
+
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null)
+  const [open, setOpen] = useState(false)
 
   // Build UI table data from raw documents (english field names)
   const tableData = useMemo(() => {
@@ -114,6 +123,17 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
     }
   }
 
+  const handleRemoveService = (index: number) => {
+    if (!selectedAppointment) return
+
+    const updated = {
+      ...selectedAppointment,
+      servicios: selectedAppointment.servicios?.filter((_: any, i: number) => i !== index) || []
+    }
+
+    setSelectedAppointment(updated)
+  }
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
       'Pendiente': 'bg-yellow-100 text-yellow-800',
@@ -131,10 +151,7 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
     {
       accessorKey: 'fecha',
       header: 'Fecha',
-      cell: ({ getValue }) => {
-        const value = getValue<string>()
-        return formatDate(value)
-      },
+      cell: ({ getValue }) => formatDate(getValue<string>()),
     },
     { accessorKey: 'hora', header: 'Hora' },
     { accessorKey: 'total', header: 'Total' },
@@ -146,7 +163,7 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
         return <Badge className={getStatusBadge(value)}>{value}</Badge>
       },
     },
-    { accessorKey: 'dueno', header: 'Dueño' },
+    { accessorKey: 'dueño.nombre', header: 'Dueño' },
   ]
 
   const confirmColumns: ColumnDef<any, any>[] = [
@@ -155,25 +172,20 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
       id: 'acciones',
       header: 'Acciones',
       cell: ({ row }) => {
-        const original = row.original as any
+        const original = row.original
         const isProcessing = processingId === original.id
+
         return (
           <div className="flex gap-2">
             <Button
               size="sm"
-              variant="default"
-              onClick={() => handleConfirmClick(original.id)}
-              disabled={spanishToStatus[original.estado] !== 'pending' || loading || isProcessing}
+              variant="secondary"
+              onClick={() => {
+                setSelectedAppointment(original)
+                setOpen(true)
+              }}
             >
-              {isProcessing ? 'Confirmando...' : 'Confirmar'}
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => handleRejectClick(original.id)}
-              disabled={spanishToStatus[original.estado] !== 'pending' || loading || isProcessing}
-            >
-              {isProcessing ? 'Rechazando...' : 'Rechazar'}
+              Ver Detalles
             </Button>
           </div>
         )
@@ -181,13 +193,91 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
     },
   ]
 
-  // Filter using tableData (Spanish display fields)
-  const datosHoy = tableData.filter((item) => isToday(item.fecha))
-  const horasConfirmadas = datosHoy.filter((item) => ['Completado','Cancelado','Confirmado'].includes(item.estado))
-  const horasPendientes = datosHoy.filter((item) => item.estado === 'Pendiente')
+  const datosHoy = data.filter((item) => isToday(item.fecha))
+  const horasConfirmadas = datosHoy.filter((i) => i.estado !== 'Pendiente')
+  const horasPendientes = datosHoy.filter((i) => i.estado === 'Pendiente')
+
+  const totalServicios =
+    selectedAppointment?.servicios?.reduce(
+      (acc: number, item: any) => acc + item.precio,
+      0
+    ) || 0
 
   return (
     <div className="@container/main flex flex-1 flex-col gap-6 py-6 px-4 md:px-6">
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+          <h2 className="text-xl font-semibold">Detalles de la Cita</h2>
+          </DialogHeader>
+
+          {selectedAppointment && (
+            <div className="flex flex-col gap-4">
+
+              <div className="border rounded-lg p-4 space-y-1">
+                <p><strong>Mascota:</strong> {selectedAppointment.nombre}</p>
+                <p><strong>Tipo:</strong> {selectedAppointment.tipo}</p>
+                <p><strong>Fecha:</strong> {formatDate(selectedAppointment.fecha)}</p>
+                <p><strong>Hora:</strong> {selectedAppointment.hora}</p>
+                <hr />
+                <p><strong>Dueño:</strong> {selectedAppointment.dueño?.nombre}</p>
+                <p><strong>RUT:</strong> {selectedAppointment.dueño?.rut}</p>
+                <p><strong>Teléfono:</strong> {selectedAppointment.dueño?.telefono}</p>
+                <p><strong>Email:</strong> {selectedAppointment.dueño?.email}</p>
+              </div>
+
+              <div className="border rounded-lg p-4 space-y-2">
+                <h3 className="font-semibold">Servicios</h3>
+
+                {selectedAppointment.servicios?.map((servicio: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center border-b pb-2"
+                  >
+                    <span>{servicio.nombre} — ${servicio.precio}</span>
+
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleRemoveService(index)}
+                    >
+                      Quitar
+                    </Button>
+                  </div>
+                ))}
+
+                <p className="text-right font-semibold mt-2">
+                  Total: ${totalServicios}
+                </p>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    handleConfirmClick(selectedAppointment.id)
+                    setOpen(false)
+                  }}
+                >
+                  Confirmar Hora
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    handleRejectClick(selectedAppointment.id)
+                    setOpen(false)
+                  }}
+                >
+                  Rechazar
+                </Button>
+              </DialogFooter>
+
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4 mb-4">
         <StatCard
           title="Horas Agendadas Hoy"
