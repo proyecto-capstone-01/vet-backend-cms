@@ -14,7 +14,8 @@ export const Services: CollectionConfig = {
     group: {
       en: 'Website Content',
       es: 'Contenido del Sitio Web'
-    }
+    },
+    useAsTitle: 'title'
   },
   fields: [
     {
@@ -40,8 +41,7 @@ export const Services: CollectionConfig = {
       label: {
         en: 'Service Price',
         es: 'Precio del Servicio'
-      },
-      required: true
+      }
     },
     {
       name: 'icon',

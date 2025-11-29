@@ -81,6 +81,9 @@ export interface Config {
     blog: Blog;
     'blog-categories': BlogCategory;
     'blog-tags': BlogTag;
+    hours: Hour;
+    'closed-days': ClosedDay;
+    'blocked-slots': BlockedSlot;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -101,6 +104,9 @@ export interface Config {
     blog: BlogSelect<false> | BlogSelect<true>;
     'blog-categories': BlogCategoriesSelect<false> | BlogCategoriesSelect<true>;
     'blog-tags': BlogTagsSelect<false> | BlogTagsSelect<true>;
+    hours: HoursSelect<false> | HoursSelect<true>;
+    'closed-days': ClosedDaysSelect<false> | ClosedDaysSelect<true>;
+    'blocked-slots': BlockedSlotsSelect<false> | BlockedSlotsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -146,6 +152,7 @@ export interface User {
   firstName: string;
   lastName: string;
   roles: ('admin' | 'editor' | 'blogger' | 'webEditor' | 'dashboard')[];
+  profileImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -174,6 +181,7 @@ export interface Media {
    * A short description of the image or file.
    */
   alt: string;
+  _key?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -187,6 +195,7 @@ export interface Media {
   focalY?: number | null;
   sizes?: {
     thumbnail?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -195,6 +204,7 @@ export interface Media {
       filename?: string | null;
     };
     square?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -203,6 +213,7 @@ export interface Media {
       filename?: string | null;
     };
     small?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -211,6 +222,7 @@ export interface Media {
       filename?: string | null;
     };
     medium?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -219,6 +231,7 @@ export interface Media {
       filename?: string | null;
     };
     large?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -227,6 +240,7 @@ export interface Media {
       filename?: string | null;
     };
     xlarge?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -235,6 +249,7 @@ export interface Media {
       filename?: string | null;
     };
     og?: {
+      _key?: string | null;
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -370,6 +385,11 @@ export interface Pet {
   breed?: string | null;
   weight?: number | null;
   height?: number | null;
+  notes?: string | null;
+  /**
+   * Upload photos of the pet
+   */
+  photos?: (number | Media)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -381,7 +401,7 @@ export interface Service {
   id: number;
   title: string;
   description?: string | null;
-  price: number;
+  price?: number | null;
   icon?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
@@ -392,14 +412,13 @@ export interface Service {
  */
 export interface Appointment {
   id: number;
-  nombre: string;
-  tipo: string;
-  servicio: string;
-  fecha: string;
-  hora: string;
-  total: number;
-  estado: 'Pendiente' | 'Completado' | 'Cancelado';
-  dueño: string;
+  pet: number | Pet;
+  date: string;
+  time: string;
+  services: (number | Service)[];
+  comment?: string | null;
+  safeId: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'canceled';
   updatedAt: string;
   createdAt: string;
 }
@@ -494,6 +513,41 @@ export interface BlogTag {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hours".
+ */
+export interface Hour {
+  id: number;
+  dayOfWeek: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  startTime: string;
+  endTime: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "closed-days".
+ */
+export interface ClosedDay {
+  id: number;
+  date: string;
+  reason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blocked-slots".
+ */
+export interface BlockedSlot {
+  id: number;
+  date: string;
+  time: string;
+  reason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -554,6 +608,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'blog-tags';
         value: number | BlogTag;
+      } | null)
+    | ({
+        relationTo: 'hours';
+        value: number | Hour;
+      } | null)
+    | ({
+        relationTo: 'closed-days';
+        value: number | ClosedDay;
+      } | null)
+    | ({
+        relationTo: 'blocked-slots';
+        value: number | BlockedSlot;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -605,6 +671,7 @@ export interface UsersSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
   roles?: T;
+  profileImage?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -628,6 +695,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  _key?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -645,6 +713,7 @@ export interface MediaSelect<T extends boolean = true> {
         thumbnail?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -655,6 +724,7 @@ export interface MediaSelect<T extends boolean = true> {
         square?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -665,6 +735,7 @@ export interface MediaSelect<T extends boolean = true> {
         small?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -675,6 +746,7 @@ export interface MediaSelect<T extends boolean = true> {
         medium?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -685,6 +757,7 @@ export interface MediaSelect<T extends boolean = true> {
         large?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -695,6 +768,7 @@ export interface MediaSelect<T extends boolean = true> {
         xlarge?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -705,6 +779,7 @@ export interface MediaSelect<T extends boolean = true> {
         og?:
           | T
           | {
+              _key?: T;
               url?: T;
               width?: T;
               height?: T;
@@ -818,6 +893,8 @@ export interface PetsSelect<T extends boolean = true> {
   breed?: T;
   weight?: T;
   height?: T;
+  notes?: T;
+  photos?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -838,14 +915,13 @@ export interface ServicesSelect<T extends boolean = true> {
  * via the `definition` "appointments_select".
  */
 export interface AppointmentsSelect<T extends boolean = true> {
-  nombre?: T;
-  tipo?: T;
-  servicio?: T;
-  fecha?: T;
-  hora?: T;
-  total?: T;
-  estado?: T;
-  dueño?: T;
+  pet?: T;
+  date?: T;
+  time?: T;
+  services?: T;
+  comment?: T;
+  safeId?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -893,6 +969,38 @@ export interface BlogCategoriesSelect<T extends boolean = true> {
 export interface BlogTagsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hours_select".
+ */
+export interface HoursSelect<T extends boolean = true> {
+  dayOfWeek?: T;
+  startTime?: T;
+  endTime?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "closed-days_select".
+ */
+export interface ClosedDaysSelect<T extends boolean = true> {
+  date?: T;
+  reason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blocked-slots_select".
+ */
+export interface BlockedSlotsSelect<T extends boolean = true> {
+  date?: T;
+  time?: T;
+  reason?: T;
   updatedAt?: T;
   createdAt?: T;
 }

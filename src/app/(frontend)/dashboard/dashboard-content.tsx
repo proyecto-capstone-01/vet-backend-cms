@@ -6,7 +6,7 @@ import { StatCard } from '@/components/StatCard'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { ColumnDef } from '@tanstack/react-table'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -19,6 +19,7 @@ interface DashboardContentProps {
   initialData: any[]
 }
 
+// Helpers using raw English fields
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
@@ -41,6 +42,34 @@ const isToday = (dateString: string): boolean => {
   return appointmentDate.getTime() === todayDate.getTime()
 }
 
+const statusToSpanish: Record<string,string> = {
+  pending: 'Pendiente',
+  confirmed: 'Confirmado',
+  completed: 'Completado',
+  canceled: 'Cancelado',
+}
+
+const spanishToStatus: Record<string,string> = {
+  'Pendiente': 'pending',
+  'Confirmado': 'confirmed',
+  'Completado': 'completed',
+  'Cancelado': 'canceled',
+}
+
+const speciesToSpanish: Record<string,string> = {
+  dog: 'Perro',
+  cat: 'Gato',
+}
+
+function formatTime(iso: string) {
+  try {
+    const d = new Date(iso)
+    const hh = String(d.getUTCHours()).padStart(2,'0')
+    const mm = String(d.getUTCMinutes()).padStart(2,'0')
+    return `${hh}:${mm}`
+  } catch { return '' }
+}
+
 export default function DashboardContent({ initialData }: DashboardContentProps) {
   const { data, loading, handleConfirm, handleReject } = useAppointments(initialData)
 
@@ -48,10 +77,32 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
   const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null)
   const [open, setOpen] = useState(false)
 
+  // Build UI table data from raw documents (english field names)
+  const tableData = useMemo(() => {
+    return (data || []).map((doc: any) => {
+      const pet = typeof doc.pet === 'object' ? doc.pet : null
+      const owner = pet && typeof pet.owner === 'object' ? pet.owner : null
+      const services = Array.isArray(doc.services) ? doc.services : []
+      const firstServiceTitle = services[0] && typeof services[0] === 'object' ? services[0].title : undefined
+      return {
+        id: doc.id?.toString?.() ?? doc.id,
+        fecha: doc.date,
+        hora: doc.time ? formatTime(doc.time) : '',
+        estado: statusToSpanish[doc.status] || 'Pendiente',
+        nombre: pet?.name || 'Mascota',
+        tipo: speciesToSpanish[pet?.species || ''] || pet?.species || '',
+        servicio: firstServiceTitle || `${services.length} servicio(s)`,
+        total: services.length.toString(),
+        dueno: owner ? `${owner.firstName} ${owner.lastName}` : '',
+        rawStatus: doc.status,
+      }
+    })
+  }, [data])
+
   const handleConfirmClick = async (id: string) => {
     setProcessingId(id)
     try {
-      await handleConfirm(id)
+      await handleConfirm(id) // sets status to completed internally
       toast.success('Cita confirmada')
     } catch (err) {
       toast.error('Error al confirmar cita')
@@ -63,7 +114,7 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
   const handleRejectClick = async (id: string) => {
     setProcessingId(id)
     try {
-      await handleReject(id)
+      await handleReject(id) // sets status to canceled internally
       toast.success('Cita rechazada')
     } catch (err) {
       toast.error('Error al rechazar cita')
@@ -88,6 +139,7 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
       'Pendiente': 'bg-yellow-100 text-yellow-800',
       'Completado': 'bg-green-100 text-green-800',
       'Cancelado': 'bg-red-100 text-red-800',
+      'Confirmado': 'bg-blue-100 text-blue-800',
     }
     return variants[status] || variants['Pendiente']
   }
