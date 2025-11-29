@@ -1,6 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { format } from 'date-fns'
+
 
 const ALLOWED_ORIGINS = [
   process.env.NEXT_PUBLIC_SITE_URL ?? '',
@@ -107,7 +107,7 @@ export const POST = async (request: Request) => {
         date: dateISO,
         time: timeDate.toISOString(),
         services: data.services,
-        comment: data.comentario || null,
+        comment: data.comment || null,
         pet: pet.id,
         status: 'pending',
         safeId: 'apt-' + Math.random().toString(36).substr(2, 9),
@@ -227,7 +227,8 @@ async function upsertPet(payload: any, petData: any): Promise<{ doc: any; create
 
 async function validateSlot(payload: any, dateISO: string, timeDate: Date) {
   const dateOnly = dateISO.split('T')[0]
-  const date = new Date(dateISO)
+  // use chile timezone
+  const date = new Date(dateOnly + 'T00:00:00-04:00')
 
   // Closed days
   const closed = await payload.find({ collection: 'closed-days', where: { date: { equals: dateOnly } }, limit: 1 })
@@ -238,6 +239,9 @@ async function validateSlot(payload: any, dateISO: string, timeDate: Date) {
   const hours = await payload.find({ collection: 'hours', where: { dayOfWeek: { equals: dow } }, limit: 1 })
   if (hours.total === 0) return false
   const h = hours.docs[0] as any
+  console.log(hours)
+  console.log(date.getDay(), dow)
+  console.log(h)
 
   // Minutes since midnight in UTC for requested and bounds
   const reqMins = timeDate.getUTCHours() * 60 + timeDate.getUTCMinutes()
@@ -270,6 +274,11 @@ async function validateSlot(payload: any, dateISO: string, timeDate: Date) {
     return aStr === timeStr
   })
   if (taken) return false
+
+  console.log(`Slot validated: ${dateOnly} ${timeStr}`)
+  console.log(`Open: ${String(openMins/60).padStart(2,'0')}:${String(openMins%60).padStart(2,'0')} - Close: ${String(closeMins/60).padStart(2,'0')}:${String(closeMins%60).padStart(2,'0')}`)
+  console.log(`Requested mins: ${reqMins}, Open mins: ${openMins}, Close mins: ${closeMins}`)
+  console.log(`Blocked slots checked: ${blocks.total}, Appointments checked: ${appts.total}`)
 
   return true
 }
