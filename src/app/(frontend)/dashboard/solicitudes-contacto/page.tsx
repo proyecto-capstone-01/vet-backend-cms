@@ -1,24 +1,29 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { GenericDataTable } from "@/components/DataTable"
-import { ColumnDef } from "@tanstack/react-table"
+import * as React from 'react'
+import { GenericDataTable } from '@/components/DataTable'
+import { ColumnDef } from '@tanstack/react-table'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+} from '@/components/ui/dialog'
+import { Card } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Copy, Trash2 } from "lucide-react"
+} from '@/components/ui/select'
+import {
+  IconBrandWhatsapp,
+  IconCopy,
+  IconTrash
+} from '@tabler/icons-react'
 
 interface Contact {
   id: string
@@ -26,7 +31,7 @@ interface Contact {
   email: string
   phone: string
   message: string
-  contactPreference: "email" | "phone"
+  contactPreference: 'email' | 'phone'
   spam: boolean
   answered: boolean
   createdAt: string
@@ -36,19 +41,21 @@ export default function ContactosPage() {
   const [contactos, setContactos] = React.useState<Contact[]>([])
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null)
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-  const [filter, setFilter] = React.useState<"todos" | "respondido" | "spam" | "sin-responder">("todos")
+  const [filter, setFilter] = React.useState<'todos' | 'respondido' | 'spam' | 'sin-responder'>(
+    'sin-responder',
+  )
   const [copied, setCopied] = React.useState(false)
   const [loading, setLoading] = React.useState(true)
 
   const fetchContacts = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/contact-form?limit=1000")
-      if (!res.ok) throw new Error("Error al cargar contactos")
+      const res = await fetch('/api/contact-form?limit=1000')
+      if (!res.ok) throw new Error('Error al cargar contactos')
       const data = await res.json()
       setContactos(data.docs || [])
     } catch (error) {
-      console.error("Error:", error)
+      console.error('Error:', error)
     } finally {
       setLoading(false)
     }
@@ -59,10 +66,10 @@ export default function ContactosPage() {
   }, [])
 
   const filteredContacts = contactos.filter((c) => {
-    if (filter === "todos") return true
-    if (filter === "spam") return c.spam
-    if (filter === "respondido") return c.answered
-    if (filter === "sin-responder") return !c.answered && !c.spam
+    if (filter === 'todos') return true
+    if (filter === 'spam') return c.spam
+    if (filter === 'respondido') return c.answered
+    if (filter === 'sin-responder') return !c.answered && !c.spam
     return true
   })
 
@@ -72,20 +79,20 @@ export default function ContactosPage() {
     setCopied(false)
   }
 
-  const handleMarkAs = async (field: "answered" | "spam", value: boolean) => {
+  const handleMarkAs = async (field: 'answered' | 'spam', value: boolean) => {
     if (!selectedContact) return
     try {
       const res = await fetch(`/api/contact-form/${selectedContact.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value }),
       })
-      if (!res.ok) throw new Error("Error al actualizar")
+      if (!res.ok) throw new Error('Error al actualizar')
       setSelectedContact(null)
       setIsDialogOpen(false)
       await fetchContacts()
     } catch (error) {
-      console.error("Error:", error)
+      console.error('Error:', error)
     }
   }
 
@@ -93,14 +100,14 @@ export default function ContactosPage() {
     if (!selectedContact) return
     try {
       const res = await fetch(`/api/contact-form/${selectedContact.id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       })
-      if (!res.ok) throw new Error("Error al eliminar")
+      if (!res.ok) throw new Error('Error al eliminar')
       setSelectedContact(null)
       setIsDialogOpen(false)
       await fetchContacts()
     } catch (error) {
-      console.error("Error:", error)
+      console.error('Error:', error)
     }
   }
   const handleCopyEmail = async () => {
@@ -113,53 +120,47 @@ export default function ContactosPage() {
 
   const columns: ColumnDef<Contact>[] = [
     {
-      accessorKey: "name",
-      header: "Nombre",
+      accessorKey: 'name',
+      header: 'Nombre',
     },
     {
-      accessorKey: "email",
-      header: "Email",
+      accessorKey: 'email',
+      header: 'Email',
     },
     {
-      accessorKey: "phone",
-      header: "Teléfono",
+      accessorKey: 'phone',
+      header: 'Teléfono',
     },
     {
-      accessorKey: "message",
-      header: "Mensaje",
+      accessorKey: 'message',
+      header: 'Mensaje',
       cell: ({ row }) => (
-        <span className="line-clamp-1 text-muted-foreground">
-          {row.original.message}
-        </span>
+        <span className="line-clamp-1 text-muted-foreground">{row.original.message}</span>
       ),
     },
     {
-      id: "estado",
-      header: "Estado",
+      id: 'estado',
+      header: 'Estado',
       cell: ({ row }) => {
         const { spam, answered } = row.original
-        let text = "Sin responder"
-        let color = "text-yellow-600"
-        
+        let text = 'Sin responder'
+        let color = 'text-yellow-600'
+
         if (spam) {
-          text = "Spam"
-          color = "text-red-600"
+          text = 'Spam'
+          color = 'text-red-600'
         } else if (answered) {
-          text = "Respondido"
-          color = "text-green-600"
+          text = 'Respondido'
+          color = 'text-green-600'
         }
         return <span className={color}>{text}</span>
       },
     },
     {
-      id: "acciones",
-      header: "Acciones",
+      id: 'acciones',
+      header: 'Acciones',
       cell: ({ row }) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleOpenDialog(row.original)}
-        >
+        <Button variant="outline" size="sm" onClick={() => handleOpenDialog(row.original)}>
           Ver detalles
         </Button>
       ),
@@ -169,7 +170,7 @@ export default function ContactosPage() {
   return (
     <div className="p-6 space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Solicitudes de Contacto</h2>
+        {/*<h2 className="text-lg font-semibold">Solicitudes de Contacto</h2>*/}
         <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filtrar por estado" />
@@ -195,14 +196,14 @@ export default function ContactosPage() {
           <DialogHeader>
             <DialogTitle>Detalles de Contacto</DialogTitle>
           </DialogHeader>
-          
+
           {selectedContact && (
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-semibold text-muted-foreground">Nombre</p>
                 <p>{selectedContact.name}</p>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-muted-foreground">Email</p>
@@ -215,29 +216,52 @@ export default function ContactosPage() {
                     {selectedContact.email}
                   </a>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCopyEmail}
-                >
-                  <Copy className="w-4 h-4 mr-1" />
-                  {copied ? "Copiado" : "Copiar"}
+                <Button size="sm" variant="outline" onClick={handleCopyEmail}>
+                  <IconCopy className="w-4 h-4 mr-1" />
+                  {copied ? 'Copiado' : 'Copiar Email'}
                 </Button>
               </div>
-              
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground">Teléfono</p>
-                <p>{selectedContact.phone}</p>
+
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-muted-foreground">Teléfono</p>
+                  <a
+                    href={'tel:' + selectedContact.phone}
+                    className="text-blue-600 underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {selectedContact.phone}
+                  </a>
+                </div>
+                <Button size="sm" variant="outline" asChild>
+                  <a
+                    href={`https://wa.me/${selectedContact.phone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <IconBrandWhatsapp className="w-4 h-4 mr-1 text-green-700" />
+                    Abrir en WhatsApp
+                  </a>
+                </Button>
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-muted-foreground">Preferencia de contacto</p>
-                <p className="capitalize">{selectedContact.contactPreference === "email" ? "Correo electrónico" : "Teléfono"}</p>
+                <p className="text-sm font-semibold text-muted-foreground">
+                  Preferencia de contacto
+                </p>
+                <p className="capitalize">
+                  {selectedContact.contactPreference === 'email'
+                    ? 'Correo electrónico'
+                    : 'Teléfono'}
+                </p>
               </div>
-              
+
               <div>
-                <p className="text-sm font-semibold text-muted-foreground">Mensaje</p>
-                <p className="whitespace-pre-wrap">{selectedContact.message}</p>
+                <p className="text-sm font-semibold text-muted-foreground pb-2">Mensaje</p>
+                <Card className="p-4 bg-muted">
+                  <p className="whitespace-pre-wrap">{selectedContact.message}</p>
+                </Card>
               </div>
 
               <div className="pt-4 border-t">
@@ -247,28 +271,24 @@ export default function ContactosPage() {
                     <Button
                       size="sm"
                       variant="default"
-                      onClick={() => handleMarkAs("answered", true)}
+                      onClick={() => handleMarkAs('answered', true)}
                     >
                       Marcar como respondido
                     </Button>
                   )}
-                  
+
                   {!selectedContact.spam && (
                     <Button
                       size="sm"
                       variant="secondary"
-                      onClick={() => handleMarkAs("spam", true)}
+                      onClick={() => handleMarkAs('spam', true)}
                     >
                       Marcar como spam
                     </Button>
                   )}
-                  
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={handleDelete}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
+
+                  <Button size="sm" variant="destructive" onClick={handleDelete}>
+                    <IconTrash className="w-4 h-4 mr-1" />
                     Eliminar
                   </Button>
                 </div>

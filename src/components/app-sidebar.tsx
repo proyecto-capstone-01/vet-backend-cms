@@ -3,8 +3,6 @@
 import * as React from "react"
 import {
   IconHome,
-  IconClock,
-  IconClipboardList,
   IconUsers,
   IconDog,
   IconPackage,
@@ -15,6 +13,9 @@ import {
   IconListDetails,
   IconHelpCircle,
   IconBook,
+  IconCalendar,
+  IconChartBar,
+  IconMailPlus
 } from "@tabler/icons-react"
 import {
   Sidebar,
@@ -35,7 +36,7 @@ import Image from "next/image"
 const data = {
   navMain: [
     {
-      title: "Home",
+      title: "Gestión de horas",
       icon: IconHome,
       url: "/dashboard",
       items: [
@@ -45,21 +46,21 @@ const data = {
       ],
     },
     {
-      title: "Analítica",
-      icon: IconClipboardList,
-      url: "/dashboard/analitica",
-      items: [
-        { title: "Análisis de Visitas", url: "/dashboard/analitica/visitas" },
-        { title: "Análisis de Servicios", url: "/dashboard/analitica/servicios" },
-      ],
-    },
-    {
-      title: "Horas",
-      icon: IconClock,
+      title: "Calendario",
+      icon: IconCalendar,
       url: "/dashboard/horas",
       items: [
         { title: "Calendario con Horas", url: "/dashboard/horas" },
         { title: "Seleccionar Horas para Desplegar", url: "/dashboard/horas/seleccionar" },
+      ],
+    },
+    {
+      title: "Analíticas",
+      icon: IconChartBar,
+      url: "/dashboard/analitica",
+      items: [
+        { title: "Análisis de Visitas", url: "/dashboard/analitica/visitas" },
+        { title: "Análisis de Servicios", url: "/dashboard/analitica/servicios" },
       ],
     },
     {
@@ -93,8 +94,8 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Contactos",
-      icon: IconClipboardList,
+      title: "Formulario de Contacto",
+      icon: IconMailPlus,
       url: "/dashboard/solicitudes-contacto",
       items: [{ title: "Listado de Contactos", url: "/dashboard/solicitudes-contacto" }],
     }
@@ -175,7 +176,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <a
-                href="/dashboard/manualdeusuario"
+                href="/dashboard/manual-de-usuario"
                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${
                   pathname === "/dashboard/manual-usuario"
                     ? "text-foreground"

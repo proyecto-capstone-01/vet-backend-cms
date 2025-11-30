@@ -318,10 +318,6 @@ export interface Inventory {
  */
 export interface Product {
   id: number;
-  /**
-   * Link a product to an internal inventory item to inherit name, description, images and stock status
-   */
-  inventoryItem?: (number | null) | Inventory;
   name: string;
   description?: string | null;
   price?: number | null;
@@ -330,7 +326,7 @@ export interface Product {
    */
   discount?: number | null;
   outOfStock?: boolean | null;
-  images?: (number | Media)[] | null;
+  images: (number | Media)[];
   updatedAt: string;
   createdAt: string;
 }
@@ -838,7 +834,6 @@ export interface InventorySelect<T extends boolean = true> {
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
-  inventoryItem?: T;
   name?: T;
   description?: T;
   price?: T;
