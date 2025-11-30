@@ -4,7 +4,6 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { format, addMinutes, startOfWeek, addDays, isSameDay } from 'date-fns'
 import { es } from 'date-fns/locale/es'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { CreateScheduleButton, SlotPill, CloseDayButton } from '@/app/(frontend)/dashboard/horas/horarios/actions'
@@ -64,8 +63,8 @@ export default async function Horarios() {
   })
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Horarios</h1>
+    <div className="space-y-6 lg:px-6 px-3 py-3">
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {dayData.map((d) => (
           <Card key={d.idx} className="p-4 space-y-3">

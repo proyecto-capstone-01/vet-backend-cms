@@ -5,8 +5,17 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useState } from 'react'
-import { format, startOfWeek, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth } from 'date-fns'
+import {
+  format,
+  startOfWeek,
+  addDays,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+} from 'date-fns'
 import { es } from 'date-fns/locale'
+import Link from 'next/link'
 
 interface HorasContentProps {
   initialData: any[]
@@ -14,7 +23,9 @@ interface HorasContentProps {
 
 export default function HorasContent({ initialData }: HorasContentProps) {
   const { data } = useAppointments(initialData)
-  const [selectedWeekStart, setSelectedWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }))
+  const [selectedWeekStart, setSelectedWeekStart] = useState(
+    startOfWeek(new Date(), { weekStartsOn: 1 }),
+  )
   const [selectedMonth, setSelectedMonth] = useState(new Date())
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month')
 
@@ -34,11 +45,9 @@ export default function HorasContent({ initialData }: HorasContentProps) {
 
         if (apt.fecha instanceof Date) {
           fechaStr = format(apt.fecha, 'yyyy-MM-dd')
-        }
-        else if (typeof apt.fecha === 'number') {
+        } else if (typeof apt.fecha === 'number') {
           fechaStr = format(new Date(apt.fecha), 'yyyy-MM-dd')
-        }
-        else if (typeof apt.fecha === 'string' && apt.fecha.includes('T')) {
+        } else if (typeof apt.fecha === 'string' && apt.fecha.includes('T')) {
           fechaStr = apt.fecha.split('T')[0]
         }
 
@@ -101,11 +110,35 @@ export default function HorasContent({ initialData }: HorasContentProps) {
         >
           Vista Semanal
         </Button>
+        <Button asChild variant="outline" className="ml-auto">
+          <Link href="/dashboard/horas/horarios">Ver horarios</Link>
+        </Button>
       </div>
 
       {/* Week View */}
       {viewMode === 'week' && (
         <div className="space-y-4">
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedWeekStart(addDays(selectedWeekStart, -7))}
+            >
+              ← Semana Anterior
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
+            >
+              Hoy
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedWeekStart(addDays(selectedWeekStart, 7))}
+            >
+              Próxima Semana →
+            </Button>
+          </div>
+
           <div className="grid grid-cols-7 gap-2">
             {weekDays.map((day) => {
               const appointments = getAppointmentsByDay(day)
@@ -135,24 +168,6 @@ export default function HorasContent({ initialData }: HorasContentProps) {
               )
             })}
           </div>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setSelectedWeekStart(addDays(selectedWeekStart, -7))}
-            >
-              ← Semana Anterior
-            </Button>
-            <Button variant="outline" onClick={() => setSelectedWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
-              Hoy
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setSelectedWeekStart(addDays(selectedWeekStart, 7))}
-            >
-              Próxima Semana →
-            </Button>
-          </div>
         </div>
       )}
 
@@ -166,7 +181,11 @@ export default function HorasContent({ initialData }: HorasContentProps) {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}
+                onClick={() =>
+                  setSelectedMonth(
+                    new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1),
+                  )
+                }
               >
                 ← Mes Anterior
               </Button>
@@ -175,7 +194,11 @@ export default function HorasContent({ initialData }: HorasContentProps) {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))}
+                onClick={() =>
+                  setSelectedMonth(
+                    new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1),
+                  )
+                }
               >
                 Próximo Mes →
               </Button>
@@ -191,7 +214,7 @@ export default function HorasContent({ initialData }: HorasContentProps) {
             ))}
 
             {/* Calendar days */}
-              {monthDays.map((day) => {
+            {monthDays.map((day) => {
               const appointments = getAppointmentsByDay(day)
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
               const isCurrentMonth = isSameMonth(day, selectedMonth)
@@ -200,14 +223,16 @@ export default function HorasContent({ initialData }: HorasContentProps) {
                 <Card
                   key={format(day, 'yyyy-MM-dd')}
                   className={`p-2 min-h-28 overflow-y-auto ${
-                    !isCurrentMonth 
-                      ? 'bg-gray-50 dark:bg-gray-900' 
-                      : isToday 
-                        ? 'border-blue-500 border-2 bg-blue-50 dark:bg-blue-950' 
+                    !isCurrentMonth
+                      ? 'bg-gray-50 dark:bg-gray-900'
+                      : isToday
+                        ? 'border-blue-500 border-2 bg-blue-50 dark:bg-blue-950'
                         : 'bg-white dark:bg-slate-950'
                   }`}
                 >
-                  <div className={`font-bold mb-2 ${isToday ? 'text-blue-600 dark:text-blue-400' : isCurrentMonth ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600'}`}>
+                  <div
+                    className={`font-bold mb-2 ${isToday ? 'text-blue-600 dark:text-blue-400' : isCurrentMonth ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600'}`}
+                  >
                     {format(day, 'd')}
                   </div>
                   <div className="space-y-1">

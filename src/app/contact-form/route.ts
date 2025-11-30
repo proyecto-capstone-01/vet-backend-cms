@@ -37,6 +37,22 @@ export const POST = async (request: Request) => {
 
   const requiredFields = ['name', 'email', 'message']
 
+  const forbiddenSubstrings = ['http://', 'https://', 'www.', '.com', '.net', '.org', '.io', '.co', '://', 'href=', '<a ', '<script', 'javascript:', 'onclick=', 'onerror=', '.exe', '.zip', '.rar', '.dll', '.bat', '.cmd', '.ps1']
+
+  for (const field of requiredFields) {
+    const value = data[field]
+    if (typeof value === 'string') {
+      for (const substring of forbiddenSubstrings) {
+        if (value.includes(substring)) {
+          return Response.json(
+            { error: `Invalid content` },
+            { status: 400, headers: corsHeaders(origin) },
+          )
+        }
+      }
+    }
+  }
+
   for (const field of requiredFields) {
     if (!data[field]) {
       return Response.json(
