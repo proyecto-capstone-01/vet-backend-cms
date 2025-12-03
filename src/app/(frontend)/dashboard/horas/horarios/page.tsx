@@ -2,29 +2,15 @@
 
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { format, addMinutes, startOfWeek, addDays, isSameDay } from 'date-fns'
-import { es } from 'date-fns/locale/es'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { CreateScheduleButton, SlotPill, CloseDayButton } from '@/app/(frontend)/dashboard/horas/horarios/actions'
+import { DateTime } from 'luxon'
+import { TZ, isoTimeToHHmm, weekdaySlug, generateHalfHourSlots } from '@/lib/timezone'
+import * as timezoneFns from '@/lib/timezone'
 
-// Next app router: mark this as a Server Component wrapper and embed small Client islands where needed
-
+// Labels for days (index 0 => Monday)
 const dayLabels = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-
-function generateSlots(open: Date, close: Date) {
-  const slots: string[] = []
-  let cur = new Date(open)
-  while (cur < close) {
-    slots.push(format(cur, 'HH:mm'))
-    cur = addMinutes(cur, 30)
-  }
-  return slots
-}
-
-function toTime(dateStr?: string | null) {
-  return dateStr ? new Date(dateStr) : undefined
-}
 
 async function getSchedulingData() {
   const payload = await getPayload({ config })
@@ -39,32 +25,53 @@ async function getSchedulingData() {
 export default async function Horarios() {
   const { hours, closedDays, blockedSlots } = await getSchedulingData()
 
-  const today = new Date()
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 })
+  // Start of current week (Monday) in Chile timezone
+  const today = DateTime.now().setZone(TZ)
+  const weekStart = today.minus({ days: today.weekday - 1 }).startOf('day') // weekday: 1=Mon ... 7=Sun
 
   const dayData = Array.from({ length: 7 }).map((_, idx) => {
-    const date = addDays(weekStart, idx)
-    const dow = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][idx]
-    const h = hours.find((x: any) => x.dayOfWeek === dow)
-    const closed = closedDays.some((d: any) => isSameDay(new Date(d.date), date))
+    const date = weekStart.plus({ days: idx })
+    const dateKey = date.toFormat('yyyy-MM-dd')
+    const dowSlug = weekdaySlug(date)
+    const h = (hours as any[]).find((x) => x.dayOfWeek === dowSlug)
+    const closed = (closedDays as any[]).some((d) => {
+      const cd = DateTime.fromISO(d.date, { zone: TZ })
+      return cd.toFormat('yyyy-MM-dd') === dateKey
+    })
+
     let slots: string[] = []
     if (h && !closed) {
-      const open = toTime(h.startTime)
-      const close = toTime(h.endTime)
-      if (open && close) slots = generateSlots(open, close)
+      const openISO = h.startTime
+      const closeISO = h.endTime
+      if (openISO && closeISO) {
+        const genFn: any = (timezoneFns as any).generateHalfHourSlotsForDate || ((localISO: string, o: string, c: string) => generateHalfHourSlots(o, c))
+        slots = genFn(date.toISO()!, openISO, closeISO)
+      }
     }
-    const blocked = new Set(
-      blockedSlots
-        .filter((b: any) => isSameDay(new Date(b.date), date))
-        .map((b: any) => format(new Date(b.time), 'HH:mm')),
+
+    const blockedSet = new Set(
+      (blockedSlots as any[])
+        .filter((b) => {
+          const bd = DateTime.fromISO(b.date, { zone: TZ })
+          return bd.toFormat('yyyy-MM-dd') === dateKey
+        })
+        .map((b) => isoTimeToHHmm(b.time))
     )
-    const displaySlots = slots.map((s) => ({ time: s, available: !blocked.has(s) }))
-    return { idx, date, dow, closed, h, slots: displaySlots }
+
+    const displaySlots = slots.map((s) => ({ time: s, available: !blockedSet.has(s) }))
+
+    return {
+      idx,
+      date,
+      dow: dowSlug,
+      closed,
+      h,
+      slots: displaySlots,
+    }
   })
 
   return (
     <div className="space-y-6 lg:px-6 px-3 py-3">
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {dayData.map((d) => (
           <Card key={d.idx} className="p-4 space-y-3">
@@ -72,13 +79,12 @@ export default async function Horarios() {
               <div>
                 <div className="font-medium">{dayLabels[d.idx]}</div>
                 <div className="text-sm text-muted-foreground">
-                  {format(d.date, "d 'de' MMMM", { locale: es })}
+                  {d.date.setLocale('es').toFormat("d 'de' MMMM")}
                 </div>
               </div>
               {d.h ? (
                 <span className="text-sm text-muted-foreground dark:text-muted-foreground">
-                  {format(new Date(d.h.startTime), 'HH:mm')} -{' '}
-                  {format(new Date(d.h.endTime), 'HH:mm')}
+                  {isoTimeToHHmm(d.h.startTime)} - {isoTimeToHHmm(d.h.endTime)}
                 </span>
               ) : (
                 <span className="text-sm text-muted-foreground">Sin horario</span>
@@ -99,12 +105,12 @@ export default async function Horarios() {
                       time={s.time}
                       available={s.available}
                       dow={d.dow}
-                      dateISO={d.date.toISOString()}
+                      dateISO={d.date.toISO()!}
                     />
                   ))}
                 </div>
                 <div className="flex items-center gap-2">
-                  <CloseDayButton dateISO={d.date.toISOString()} />
+                  <CloseDayButton dateISO={d.date.toISO()!} />
                 </div>
               </div>
             )}
@@ -114,4 +120,3 @@ export default async function Horarios() {
     </div>
   )
 }
-

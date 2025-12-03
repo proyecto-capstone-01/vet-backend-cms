@@ -94,7 +94,7 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Formulario de Contacto",
+      title: "Formulario de contacto",
       icon: IconMailPlus,
       url: "/dashboard/solicitudes-contacto",
       items: [{ title: "Listado de Contactos", url: "/dashboard/solicitudes-contacto" }],

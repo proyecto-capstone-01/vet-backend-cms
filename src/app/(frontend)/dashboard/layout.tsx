@@ -6,6 +6,7 @@ import config from "@payload-config"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Toaster } from "@/components/ui/sonner"
 
 export default async function DashboardLayout({
   children,
@@ -39,6 +40,7 @@ export default async function DashboardLayout({
       <SidebarInset>
         <SiteHeader user={userProp} />
         <div className="flex flex-1 flex-col">{children}</div>
+        <Toaster />
       </SidebarInset>
     </SidebarProvider>
   )

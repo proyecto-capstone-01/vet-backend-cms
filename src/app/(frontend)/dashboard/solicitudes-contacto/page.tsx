@@ -8,8 +8,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
-  DialogFooter,
+  DialogTitle
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
 import {
@@ -17,7 +16,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select'
 import {
   IconBrandWhatsapp,
@@ -45,19 +44,15 @@ export default function ContactosPage() {
     'sin-responder',
   )
   const [copied, setCopied] = React.useState(false)
-  const [loading, setLoading] = React.useState(true)
 
   const fetchContacts = async () => {
     try {
-      setLoading(true)
       const res = await fetch('/api/contact-form?limit=1000')
-      if (!res.ok) throw new Error('Error al cargar contactos')
+      if (!res.ok) return
       const data = await res.json()
       setContactos(data.docs || [])
     } catch (error) {
       console.error('Error:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -87,7 +82,7 @@ export default function ContactosPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value }),
       })
-      if (!res.ok) throw new Error('Error al actualizar')
+      if (!res.ok) return
       setSelectedContact(null)
       setIsDialogOpen(false)
       await fetchContacts()
@@ -102,7 +97,7 @@ export default function ContactosPage() {
       const res = await fetch(`/api/contact-form/${selectedContact.id}`, {
         method: 'DELETE',
       })
-      if (!res.ok) throw new Error('Error al eliminar')
+      if (!res.ok) return
       setSelectedContact(null)
       setIsDialogOpen(false)
       await fetchContacts()
@@ -209,7 +204,7 @@ export default function ContactosPage() {
                   <p className="text-sm font-semibold text-muted-foreground">Email</p>
                   <a
                     href={`mailto:${selectedContact.email}?subject=Respuesta%20a%20tu%20consulta&body=Hola%20${selectedContact.name},%0A%0AGracias%20por%20contactarnos.%20Responderemos%20tu%20mensaje%20pronto.`}
-                    className="text-blue-600 underline"
+                    className="text-blue-600 underline dark:text-blue-400"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -227,7 +222,7 @@ export default function ContactosPage() {
                   <p className="text-sm font-semibold text-muted-foreground">Teléfono</p>
                   <a
                     href={'tel:' + selectedContact.phone}
-                    className="text-blue-600 underline"
+                    className="text-blue-600 underline dark:text-blue-400"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -295,12 +290,6 @@ export default function ContactosPage() {
               </div>
             </div>
           )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cerrar
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
