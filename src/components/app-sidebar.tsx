@@ -90,7 +90,7 @@ const data = {
     {
       title: "Productos",
       Icon: IconListDetails,
-      url: "/admin/collections/products",
+      url: "/dashboard/productos",
       icon: IconListDetails,
     },
     {
