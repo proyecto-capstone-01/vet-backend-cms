@@ -106,7 +106,7 @@ export default async function ClientHistoryPage({ params }: { params: { id: stri
                   <div>
                     Registrado el:
                     <span className="font-semibold ml-1">
-                      {new Date(owner.createdAt).toLocaleDateString()}
+                      {new Date(owner.createdAt).toLocaleDateString('es-CL')}
                     </span>
                   </div>
                 </div>
@@ -146,11 +146,6 @@ export default async function ClientHistoryPage({ params }: { params: { id: stri
                   </Table>
                 </div>
               </CardContent>
-              <CardFooter>
-                <div>
-
-                </div>
-              </CardFooter>
             </Card>
           </div>
         </div>
@@ -182,7 +177,7 @@ export default async function ClientHistoryPage({ params }: { params: { id: stri
                   {appointments.docs.map((appointment) => (
                     <TableRow key={appointment.id}>
                       <TableCell>
-                        {new Date(appointment.date).toLocaleDateString()}
+                        {new Date(appointment.date).toLocaleDateString('es-CL')}
                       </TableCell>
                       <TableCell>
                         {appointment.pet ? (appointment.pet as any).name : 'N/A'}
@@ -195,7 +190,8 @@ export default async function ClientHistoryPage({ params }: { params: { id: stri
                       <TableCell>
                         {appointment.status === 'pending' ? 'Pendiente' :
                           appointment.status === 'completed' ? 'Completada' :
-                            appointment.status === 'canceled' ? 'Cancelada' : 'N/A'
+                            appointment.status === 'canceled' ? 'Cancelada' :
+                              appointment.status === 'confirmed' ? 'Confirmada' : 'N/A'
                         }
                       </TableCell>
                       <TableCell>

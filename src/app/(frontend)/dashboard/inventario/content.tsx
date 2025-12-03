@@ -15,7 +15,7 @@ export default function ClientComponent({ items, }: { items: Inventory[] }) {
     cell: ({ row }) => row.original.category ? row.original.category : 'N/A',
     },
     { header: 'Costo Unitario', accessorKey: 'unitCost',
-    cell: ({ row }) => row.original.unitCost ? `$${row.original.unitCost}` : 'N/A',
+    cell: ({ row }) => row.original.unitCost ? `${row.original.unitCost.toLocaleString("es-CL", { currency: "CLP", style: "currency" })}` : 'N/A',
     },
     { header: 'Cantidad', accessorKey: 'quantity',
     cell: ({ row }) => row.original.quantity !== undefined ? row.original.quantity : 'N/A',

@@ -1,3 +1,8 @@
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import { IframeSheet } from '@/components/IframeSheet'
+import Link from 'next/link'
+import { IconLink } from '@tabler/icons-react'
 import {
   Card,
   CardContent,
@@ -6,11 +11,6 @@ import {
   CardFooter,
   CardDescription, CardAction
 } from '@/components/ui/card'
-import { getPayload } from 'payload'
-import config from '@payload-config'
-import { IframeSheet } from '@/components/IframeSheet'
-import Link from 'next/link'
-import { IconLink } from '@tabler/icons-react'
 import {
   Table,
   TableBody,
@@ -21,38 +21,6 @@ import {
 } from "@/components/ui/table"
 
 
-
-/*
-"id": 29,
-
-    "owner": {
-        "id": 37,
-        "firstName": "rvne tija",
-        "lastName": "winurevqty",
-        "rut": "41112223",
-        "email": "nm2ct9cnw7865tn47c@m4c97827n4v9.com",
-        "phoneNumber": "578146578923",
-        "address": null,
-        "nameRutCombination": "rvne tija winurevqty - 41112223",
-        "updatedAt": "2025-12-02T23:38:49.065Z",
-        "createdAt": "2025-12-02T23:38:49.064Z"
-    },
-    "name": "Snop",
-    "microchipNumber": null,
-    "species": "dog",
-    "dateOfBirth": null,
-    "sex": "male",
-    "color": null,
-    "breed": null,
-    "weight": null,
-    "height": null,
-    "notes": null,
-    "photos": [],
-    "updatedAt": "2025-12-02T23:38:49.084Z",
-    "createdAt": "2025-12-02T23:38:49.084Z"
-
-}
- */
 export default async function PetHistoryPage({ params }: { params: { id: string } }) {
   const petId = params.id
   if (!petId) return <div className="p-6">ID de mascota no proporcionado.</div>
@@ -176,7 +144,7 @@ export default async function PetHistoryPage({ params }: { params: { id: string 
                   {appointments.docs.map((appointment) => (
                     <TableRow key={appointment.id}>
                       <TableCell>
-                        {new Date(appointment.date).toLocaleDateString()}
+                        {new Date(appointment.date).toLocaleDateString('es-CL')}
                       </TableCell>
                       <TableCell className="max-w-sm">
                         {appointment.services && appointment.services.length > 0

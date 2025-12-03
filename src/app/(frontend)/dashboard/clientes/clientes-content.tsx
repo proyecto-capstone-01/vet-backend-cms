@@ -4,6 +4,7 @@ import { useOwners } from '@/hooks/useOwners'
 import { GenericDataTable } from '@/components/DataTable'
 import { Button } from '@/components/ui/button'
 import type { ColumnDef } from '@tanstack/react-table'
+import { formatRUT } from '@/lib/utils'
 import Link from 'next/link'
 
 interface ClientesContentProps {
@@ -16,7 +17,12 @@ export default function ClientesContent({ initialData }: ClientesContentProps) {
   const columns: ColumnDef<any, any>[] = [
     { accessorKey: 'firstName', header: 'Nombre' },
     { accessorKey: 'lastName', header: 'Apellido' },
-    { accessorKey: 'rut', header: 'Rut' },
+    { accessorKey: 'rut', header: 'Rut',
+    cell: ({ row }) => {
+      const rut = row.original?.rut
+      return rut ? formatRUT(rut) : 'N/A'
+    }
+    },
     { accessorKey: 'email', header: 'Email',
     cell: ({ row }) => {
       const email = row.original?.email
