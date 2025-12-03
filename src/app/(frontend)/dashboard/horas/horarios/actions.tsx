@@ -14,16 +14,6 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 
 
-function hhmmToDate(hhmm: string) {
-  const [h, m] = hhmm.split(':').map(Number)
-  const d = new Date(0)
-  d.setUTCHours(h)
-  d.setUTCMinutes(m)
-  d.setUTCSeconds(0)
-  d.setUTCMilliseconds(0)
-  return d
-}
-
 export function CreateScheduleButton({ dow, disabled }: { dow: string; disabled: boolean }) {
   const [open, setOpen] = useState(false)
   const [start, setStart] = useState('08:00')
@@ -53,8 +43,8 @@ export function CreateScheduleButton({ dow, disabled }: { dow: string; disabled:
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   dayOfWeek: dow,
-                  startTime: hhmmToDate(start),
-                  endTime: hhmmToDate(end),
+                  startTime: start, // send HH:mm string
+                  endTime: end,     // send HH:mm string
                 }),
               })
               if (res.ok) {

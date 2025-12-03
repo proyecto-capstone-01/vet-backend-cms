@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useState } from 'react'
+import { es } from 'date-fns/locale'
+import Link from 'next/link'
+import type { Appointment } from '@/payload-types'
 import {
   format,
   startOfWeek,
@@ -14,20 +17,19 @@ import {
   eachDayOfInterval,
   isSameMonth,
 } from 'date-fns'
-import { es } from 'date-fns/locale'
-import Link from 'next/link'
+import { isoTimeToHHmm } from '@/lib/timezone'
+import { speciesToSpanish, statusToSpanish } from '@/app/utils/uiTranslations'
 
-interface HorasContentProps {
-  initialData: any[]
-}
+export default function HorasContent({ initialData }: { initialData: Appointment[] }) {
 
-export default function HorasContent({ initialData }: HorasContentProps) {
-  const { data } = useAppointments(initialData)
+  const { data }: { data: Appointment[] } = useAppointments(initialData)
+
   const [selectedWeekStart, setSelectedWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   )
+
   const [selectedMonth, setSelectedMonth] = useState(new Date())
-  const [viewMode, setViewMode] = useState<'month' | 'week'>('month')
+  const [viewMode, setViewMode] = useState<'month' | 'week'>('week')
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(selectedWeekStart, i))
 
@@ -41,23 +43,20 @@ export default function HorasContent({ initialData }: HorasContentProps) {
 
     const filtered = data
       .filter((apt) => {
-        let fechaStr = apt.fecha
+        let fechaStr = apt.date
 
-        if (apt.fecha instanceof Date) {
-          fechaStr = format(apt.fecha, 'yyyy-MM-dd')
-        } else if (typeof apt.fecha === 'number') {
-          fechaStr = format(new Date(apt.fecha), 'yyyy-MM-dd')
-        } else if (typeof apt.fecha === 'string' && apt.fecha.includes('T')) {
-          fechaStr = apt.fecha.split('T')[0]
+        const dateObj = new Date(apt.date)
+        if (!isNaN(dateObj.getTime())) {
+          fechaStr = format(dateObj, 'yyyy-MM-dd')
         }
 
         const matches = fechaStr === dayString
         if (matches) {
-          console.log('Coincidencia encontrada:', apt.nombre, 'fecha:', fechaStr)
+          console.log('Coincidencia encontrada:', apt.pet.name, 'fecha:', fechaStr)
         }
         return matches
       })
-      .sort((a, b) => a.hora.localeCompare(b.hora))
+      .sort((a, b) => a.time.localeCompare(b.time))
 
     console.log(`Citas encontradas para ${dayString}:`, filtered.length)
     return filtered
@@ -65,31 +64,37 @@ export default function HorasContent({ initialData }: HorasContentProps) {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
-      Pendiente: 'bg-yellow-100 text-yellow-800',
-      Completado: 'bg-green-100 text-green-800',
-      Cancelado: 'bg-red-100 text-red-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      completed: 'bg-green-100 text-green-800',
+      canceled: 'bg-red-100 text-red-800',
     }
     return variants[status] || variants['Pendiente']
   }
 
-  const renderAppointmentItem = (apt: any) => (
+  const renderAppointmentItem = (apt: Appointment) => (
     <div
       key={apt.id}
       className={`border rounded-lg p-2 text-xs space-y-1 ${
-        apt.estado === 'Completado'
+        apt.status === 'completed'
           ? 'bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-700'
-          : apt.estado === 'Cancelado'
+          : apt.status === 'canceled'
             ? 'bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-700'
             : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-gray-700'
       }`}
     >
       <div className="flex justify-between items-start gap-1">
-        <div className="font-semibold text-blue-600 dark:text-blue-400">{apt.hora}</div>
-        <Badge className={`${getStatusBadge(apt.estado)} text-xs py-0`}>{apt.estado}</Badge>
+        <div className="font-semibold text-blue-600 dark:text-blue-400">{isoTimeToHHmm(apt.time)}</div>
+        <Badge className={`${getStatusBadge(apt.status)} text-xs py-0`}>
+          {statusToSpanish[apt.status] || apt.status}
+        </Badge>
       </div>
       <div>
-        <div className="font-medium text-black dark:text-white">{apt.nombre}</div>
-        <div className="text-gray-600 dark:text-gray-300">{apt.tipo}</div>
+        <div className="font-medium text-black dark:text-white">
+          {apt.pet.name}
+        </div>
+        <div className="text-gray-600 dark:text-gray-300">
+          {speciesToSpanish[apt.pet.species] || apt.pet.species}
+        </div>
       </div>
     </div>
   )
