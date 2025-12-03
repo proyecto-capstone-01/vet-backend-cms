@@ -1,5 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { DateTime } from 'luxon'
+import { TZ, hhmmToStoredISO, isoTimeToHHmm, parseHHmm, weekdaySlug, normalizeDateOnly } from '@/lib/timezone'
 
 
 const ALLOWED_ORIGINS = [
@@ -55,12 +57,16 @@ export const POST = async (request: Request) => {
     return new Response(`Missing: ${missing.join(', ')}`, { status: 400, headers: corsHeaders(origin) })
   }
 
-  // Parse and validate the requested slot BEFORE any writes
-  const dateISO = new Date(data.date).toISOString()
-  const timeStr: string = data.time // expected HH:mm
-  const timeDate = hhmmToDate(timeStr)
+  const dateOnly = normalizeDateOnly(data.date)
+  const timeStr: string = data.time // HH:mm local clock
+  const { hour, minute } = parseHHmm(timeStr)
+  // Represent requested slot as DateTime in local timezone
+  const requestedDateTime = DateTime.fromISO(dateOnly, { zone: TZ }).set({ hour, minute, second: 0, millisecond: 0 })
+  // Stored model keeps separate date + time; date stored as ISO midnight UTC, time stored as epoch time-only UTC
+  const dateISO = requestedDateTime.startOf('day').toUTC().toISO() || requestedDateTime.startOf('day').toUTC().toFormat("yyyy-MM-dd'T'HH:mm:ss'Z'") // midnight UTC of that local day
+  const timeISO = hhmmToStoredISO(timeStr)
 
-  const isAvailable = await validateSlot(payload, dateISO, timeDate)
+  const isAvailable = await validateSlot(payload, dateOnly, hour, minute)
   if (!isAvailable) {
     return new Response('Selected time is not available', { status: 409, headers: corsHeaders(origin) })
   }
@@ -94,7 +100,7 @@ export const POST = async (request: Request) => {
     if (petRes.created) createdPetId = pet.id
 
     // Re-validate right before booking to reduce race conditions
-    const stillAvailable = await validateSlot(payload, dateISO, timeDate)
+    const stillAvailable = await validateSlot(payload, dateOnly, hour, minute)
     if (!stillAvailable) {
       // Throw an object we can catch to return 409 after cleanup
       throw { status: 409, message: 'Selected time is not available' }
@@ -105,7 +111,7 @@ export const POST = async (request: Request) => {
       collection: 'appointments',
       data: {
         date: dateISO,
-        time: timeDate.toISOString(),
+        time: timeISO,
         services: data.services,
         comment: data.comment || null,
         pet: pet.id,
@@ -169,23 +175,9 @@ export const GET = async (request: Request) => {
 }
 
 function formatTime(iso: string) {
-  try {
-    const d = new Date(iso)
-    const hh = String(d.getUTCHours()).padStart(2,'0')
-    const mm = String(d.getUTCMinutes()).padStart(2,'0')
-    return `${hh}:${mm}`
-  } catch { return '' }
+  return isoTimeToHHmm(iso)
 }
 
-function hhmmToDate(hhmm: string) {
-  const [h, m] = hhmm.split(':').map(Number)
-  const d = new Date(0)
-  d.setUTCHours(h)
-  d.setUTCMinutes(m)
-  d.setUTCSeconds(0)
-  d.setUTCMilliseconds(0)
-  return d
-}
 
 async function upsertOwner(payload: any, ownerData: any): Promise<{ doc: any; created: boolean }> {
   const where: any = { or: [] as any[] }
@@ -225,60 +217,29 @@ async function upsertPet(payload: any, petData: any): Promise<{ doc: any; create
   return { doc: created, created: true }
 }
 
-async function validateSlot(payload: any, dateISO: string, timeDate: Date) {
-  const dateOnly = dateISO.split('T')[0]
-  // use chile timezone
-  const date = new Date(dateOnly + 'T00:00:00-04:00')
-
-  // Closed days
+async function validateSlot(payload: any, dateOnly: string, hour: number, minute: number) {
+  // Date in local timezone
+  const localDate = DateTime.fromISO(dateOnly, { zone: TZ })
   const closed = await payload.find({ collection: 'closed-days', where: { date: { equals: dateOnly } }, limit: 1 })
   if (closed.total > 0) return false
-
-  // Hours for weekday
-  const dow = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][date.getDay()]
-  const hours = await payload.find({ collection: 'hours', where: { dayOfWeek: { equals: dow } }, limit: 1 })
+  const dowSlug = weekdaySlug(localDate)
+  const hours = await payload.find({ collection: 'hours', where: { dayOfWeek: { equals: dowSlug } }, limit: 1 })
   if (hours.total === 0) return false
   const h = hours.docs[0] as any
-  console.log(hours)
-  console.log(date.getDay(), dow)
-  console.log(h)
-
-  // Minutes since midnight in UTC for requested and bounds
-  const reqMins = timeDate.getUTCHours() * 60 + timeDate.getUTCMinutes()
-  const openDate = new Date(h.startTime)
-  const closeDate = new Date(h.endTime)
-  const openMins = openDate.getUTCHours() * 60 + openDate.getUTCMinutes()
-  const closeMins = closeDate.getUTCHours() * 60 + closeDate.getUTCMinutes()
-
+  const open = DateTime.fromISO(h.startTime, { zone: 'utc' })
+  const close = DateTime.fromISO(h.endTime, { zone: 'utc' })
+  const reqMins = hour * 60 + minute
+  const openMins = open.hour * 60 + open.minute
+  const closeMins = close.hour * 60 + close.minute
   if (!(reqMins >= openMins && reqMins < closeMins)) return false
-
-  // Ensure 30-min block alignment
   if (reqMins % 30 !== 0) return false
-
-  const timeStr = `${String(timeDate.getUTCHours()).padStart(2,'0')}:${String(timeDate.getUTCMinutes()).padStart(2,'0')}`
-
-  // Blocked slot
+  const timeStr = `${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}`
   const blocks = await payload.find({ collection: 'blocked-slots', where: { date: { equals: dateOnly } }, limit: 100 })
-  const isBlocked = blocks.docs.some((b: any) => {
-    const bt = new Date(b.time)
-    const bStr = `${String(bt.getUTCHours()).padStart(2,'0')}:${String(bt.getUTCMinutes()).padStart(2,'0')}`
-    return bStr === timeStr
-  })
+  const isBlocked = blocks.docs.some((b: any) => isoTimeToHHmm(b.time) === timeStr)
   if (isBlocked) return false
-
-  // Already booked
   const appts = await payload.find({ collection: 'appointments', where: { date: { equals: dateOnly } }, limit: 1000 })
-  const taken = appts.docs.some((a: any) => {
-    const at = new Date(a.time)
-    const aStr = `${String(at.getUTCHours()).padStart(2,'0')}:${String(at.getUTCMinutes()).padStart(2,'0')}`
-    return aStr === timeStr
-  })
+  const taken = appts.docs.some((a: any) => isoTimeToHHmm(a.time) === timeStr)
   if (taken) return false
-
-  console.log(`Slot validated: ${dateOnly} ${timeStr}`)
-  console.log(`Open: ${String(openMins/60).padStart(2,'0')}:${String(openMins%60).padStart(2,'0')} - Close: ${String(closeMins/60).padStart(2,'0')}:${String(closeMins%60).padStart(2,'0')}`)
-  console.log(`Requested mins: ${reqMins}, Open mins: ${openMins}, Close mins: ${closeMins}`)
-  console.log(`Blocked slots checked: ${blocks.total}, Appointments checked: ${appts.total}`)
 
   return true
 }

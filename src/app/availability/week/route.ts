@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { startOfWeek, addDays, format, addMinutes, isSameDay } from 'date-fns'
+import { DateTime } from 'luxon'
+import { TZ, isoTimeToHHmm, weekdaySlug, generateHalfHourSlotsForDate } from '@/lib/timezone'
 
 const ALLOWED_ORIGINS = [
   process.env.NEXT_PUBLIC_SITE_URL ?? '',
@@ -26,62 +27,46 @@ export async function OPTIONS(request: Request) {
   })
 }
 
-function toTime(dateStr?: string | null) {
-  return dateStr ? new Date(dateStr) : undefined
-}
-
-function generateSlots(open: Date, close: Date) {
-  const slots: string[] = []
-  let cur = new Date(open)
-  while (cur < close) {
-    slots.push(format(cur, 'HH:mm'))
-    cur = addMinutes(cur, 30)
-  }
-  return slots
-}
-
 export async function GET(request: Request) {
   const origin = request.headers.get('origin') ?? ''
   const payload = await getPayload({ config })
-  const today = new Date()
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 })
+  const today = DateTime.now().setZone(TZ)
+  // Compute Monday start of week
+  const weekStart = today.minus({ days: today.weekday - 1 }).startOf('day')
 
   const [hours, closedDays, blockedSlots, appointments] = await Promise.all([
     payload.find({ collection: 'hours' as any, limit: 1000 }),
     payload.find({ collection: 'closed-days' as any, limit: 1000 }),
     payload.find({ collection: 'blocked-slots' as any, limit: 1000 }),
-    payload.find({ collection: 'appointments', where: { date: { greater_than_equal: weekStart.toISOString().split('T')[0] } as any }, limit: 1000 }),
+    payload.find({ collection: 'appointments', where: { date: { greater_than_equal: weekStart.toFormat('yyyy-MM-dd') } as any }, limit: 1000 }),
   ])
-
   const results: Record<string, { hour: string; availability: boolean }[]> = {}
   for (let i = 0; i < 7; i++) {
-    const date = addDays(weekStart, i)
-    const key = format(date, 'yyyy-MM-dd')
-    const dow = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'][i]
-    const h = (hours.docs as any[]).find((x: any) => x.dayOfWeek === dow)
-    const closed = (closedDays.docs as any[]).some((d: any) => isSameDay(new Date(d.date), date))
-    const blocked = new Set(
+    const date = weekStart.plus({ days: i })
+    const key = date.toFormat('yyyy-MM-dd')
+    const dowSlugVal = weekdaySlug(date)
+    const h = (hours.docs as any[]).find((x: any) => x.dayOfWeek === dowSlugVal)
+    const closed = (closedDays.docs as any[]).some((d: any) => DateTime.fromISO(d.date, { zone: TZ }).toFormat('yyyy-MM-dd') === key)
+    const blockedSet = new Set(
       (blockedSlots.docs as any[])
-        .filter((b: any) => isSameDay(new Date(b.date), date))
-        .map((b: any) => format(new Date(b.time), 'HH:mm')),
+        .filter((b: any) => DateTime.fromISO(b.date, { zone: TZ }).toFormat('yyyy-MM-dd') === key)
+        .map((b: any) => isoTimeToHHmm(b.time))
     )
-    const booked = new Set(
+    const bookedSet = new Set(
       (appointments.docs as any[])
-        .filter((a: any) => isSameDay(new Date(a.date), date))
-        .map((a: any) => format(new Date(a.time), 'HH:mm')),
+        .filter((a: any) => DateTime.fromISO(a.date, { zone: TZ }).toFormat('yyyy-MM-dd') === key)
+        .map((a: any) => isoTimeToHHmm(a.time))
     )
-
     let daySlots: { hour: string; availability: boolean }[] = []
     if (h && !closed) {
-      const open = toTime(h.startTime)
-      const close = toTime(h.endTime)
-      if (open && close) {
-        const gen = generateSlots(open, close)
-        daySlots = gen.map((s) => ({ hour: s, availability: !blocked.has(s) && !booked.has(s) }))
+      const openISO = h.startTime
+      const closeISO = h.endTime
+      if (openISO && closeISO) {
+        const gen = generateHalfHourSlotsForDate(date.toISO()!, openISO, closeISO)
+        daySlots = gen.map((s) => ({ hour: s, availability: !blockedSet.has(s) && !bookedSet.has(s) }))
       }
     }
     results[key] = daySlots
   }
-
   return Response.json(results, { headers: corsHeaders(origin) })
 }

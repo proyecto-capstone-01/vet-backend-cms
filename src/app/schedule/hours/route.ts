@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { hhmmToStoredISO } from '@/lib/timezone'
 
 export async function POST(request: Request) {
   const payload = await getPayload({ config })
@@ -12,11 +13,13 @@ export async function POST(request: Request) {
   try {
     // Upsert: one per dayOfWeek
     const existing = await payload.find({ collection: 'hours' as any, where: { dayOfWeek: { equals: dayOfWeek } }, limit: 1 })
+    const startISO = typeof startTime === 'string' && startTime.includes(':') ? hhmmToStoredISO(startTime) : new Date(startTime).toISOString()
+    const endISO = typeof endTime === 'string' && endTime.includes(':') ? hhmmToStoredISO(endTime) : new Date(endTime).toISOString()
     if (existing.docs.length > 0) {
       const id = existing.docs[0].id as string
-      await payload.update({ collection: 'hours' as any, id, data: { dayOfWeek, startTime, endTime }, overrideAccess: true })
+      await payload.update({ collection: 'hours' as any, id, data: { dayOfWeek, startTime: startISO, endTime: endISO }, overrideAccess: true })
     } else {
-      await payload.create({ collection: 'hours' as any, data: { dayOfWeek, startTime, endTime }, overrideAccess: true })
+      await payload.create({ collection: 'hours' as any, data: { dayOfWeek, startTime: startISO, endTime: endISO }, overrideAccess: true })
     }
     return new Response('OK')
   } catch (e: any) {
