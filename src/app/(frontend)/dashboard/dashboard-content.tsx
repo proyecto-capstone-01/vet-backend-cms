@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import { Dialog, DialogHeader, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { DateTime } from 'luxon'
 import { TZ, isoTimeToHHmm } from '@/lib/timezone'
-import type { Appointment, Service } from '@/payload-types'
+import type { Service } from '@/payload-types'
 
 
 // Helpers using raw English fields
@@ -24,20 +24,16 @@ const formatDate = (dateString: string): string => {
   }
 }
 
-const getDateOnly = (dateString: string): Date => {
-  const date = new Date(dateString)
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-  return new Date(localDate.getFullYear(), localDate.getMonth(), localDate.getDate())
-}
-
-const isToday = (dateString: string): boolean => {
-  const today = new Date()
-  const dateToCheck = getDateOnly(dateString)
-  return (
-    dateToCheck.getFullYear() === today.getFullYear() &&
-    dateToCheck.getMonth() === today.getMonth() &&
-    dateToCheck.getDate() === today.getDate()
-  )
+// Check if a date is within [today, today + 7 days) in configured TZ
+const isInNext7DaysInclusiveToday = (dateString: string): boolean => {
+  try {
+    const target = DateTime.fromISO(dateString).setZone(TZ).startOf('day')
+    const start = DateTime.now().setZone(TZ).startOf('day')
+    const endExclusive = start.plus({ days: 7 }) // 7 days ahead, exclusive upper bound
+    return target >= start && target < endExclusive
+  } catch {
+    return false
+  }
 }
 
 const statusToSpanish: Record<string, string> = {
@@ -70,9 +66,8 @@ const formatRut = (rut: string): string => {
 }
 
 export default function DashboardContent({ initialData }: { initialData: AppointmentWithRelations[] }) {
-  const { data, loading, handleConfirm, handleReject } = useAppointments(initialData)
+  const { data, handleConfirm, handleReject } = useAppointments(initialData)
 
-  const [processingId, setProcessingId] = useState<number | null>(null)
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(null)
   const [open, setOpen] = useState(false)
 
@@ -92,26 +87,20 @@ export default function DashboardContent({ initialData }: { initialData: Appoint
   }, [data])
 
   const handleConfirmClick = async (id: number) => {
-    setProcessingId(id)
     try {
       await handleConfirm(id) // sets status to completed internally
       toast.success('Cita confirmada')
     } catch (err) {
       toast.error('Error al confirmar cita')
-    } finally {
-      setProcessingId(null)
     }
   }
 
   const handleRejectClick = async (id: number) => {
-    setProcessingId(id)
     try {
       await handleReject(id) // sets status to canceled internally
       toast.success('Cita rechazada')
     } catch (err) {
       toast.error('Error al rechazar cita')
-    } finally {
-      setProcessingId(null)
     }
   }
 
@@ -170,7 +159,6 @@ export default function DashboardContent({ initialData }: { initialData: Appoint
       header: 'Acciones',
       cell: ({ row }) => {
         const original = row.original
-        const isProcessing = processingId === original.id
 
         return (
           <div className="flex gap-2">
@@ -190,12 +178,13 @@ export default function DashboardContent({ initialData }: { initialData: Appoint
     },
   ]
 
-  const todayAppointments = tableData.filter((item) => isToday(item.date))
+  // Filter the appointments for the 7-day window starting today for 7 days ahead (exclusive upper bound)
+  const upcomingWeekAppointments = tableData.filter((item) => isInNext7DaysInclusiveToday(item.date))
 
-  const confirmedAppointments = todayAppointments.filter(
+  const confirmedAppointments = upcomingWeekAppointments.filter(
     (item) => item.estado === 'Confirmado' || item.estado === 'Completado' || item.estado === 'Cancelado'
   )
-  const unconfirmedAppointments = todayAppointments.filter((item) => item.estado === 'Pendiente')
+  const unconfirmedAppointments = upcomingWeekAppointments.filter((item) => item.estado === 'Pendiente')
 
   // @ts-ignore
   const servicesTotalPrice: number | null = selectedAppointment ? selectedAppointment.services?.reduce((total, service) => total + (service.price || 0), 0) || 0 : null
@@ -302,23 +291,23 @@ export default function DashboardContent({ initialData }: { initialData: Appoint
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4 mb-4">
         <StatCard
-          title="Horas Agendadas Hoy"
-          description="Total de horas agendadas para hoy"
-          value={todayAppointments.length.toString()}
+          title="Horas Agendadas (Próximos 7 días)"
+          description="Total de horas agendadas desde hoy hasta en 7 días"
+          value={upcomingWeekAppointments.length.toString()}
         />
         <StatCard
           title="Servicios Completados"
-          description="Total de servicios completados hoy"
+          description="Total de servicios completados en la ventana"
           value={confirmedAppointments.filter((i) => i.estado === 'Completado').length.toString()}
         />
         <StatCard
           title="Servicios Cancelados"
-          description="Total de servicios cancelados hoy"
+          description="Total de servicios cancelados en la ventana"
           value={confirmedAppointments.filter((i) => i.estado === 'Cancelado').length.toString()}
         />
         <StatCard
           title="Horas para confirmar"
-          description="Total de horas pendientes por confirmar"
+          description="Total de horas pendientes por confirmar en la ventana"
           value={unconfirmedAppointments.length.toString()}
         />
       </div>
