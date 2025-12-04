@@ -87,63 +87,68 @@ export default async function ClientHistoryPage({ params }: { params: { id: stri
                 </CardAction>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <div>Teléfono:
-                    <span className="font-semibold ml-1">
-                      {owner.phoneNumber ?? 'N/A'}
-                    </span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className='space-y-2'>
+                    <div>Teléfono:
+                      <span className="font-semibold ml-1">
+                        {owner.phoneNumber ?? 'N/A'}
+                      </span>
+                    </div>
+                    <div>Correo Electrónico:
+                      <span className="font-semibold ml-1">
+                        {owner.email ?? 'N/A'}
+                      </span>
+                    </div>
+                    <div>Dirección:
+                      <span className="font-semibold ml-1">
+                        {owner.address ?? 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      Registrado el:
+                      <span className="font-semibold ml-1">
+                        {new Date(owner.createdAt).toLocaleDateString('es-CL')}
+                      </span>
+                    </div>
                   </div>
-                  <div>Correo Electrónico:
-                    <span className="font-semibold ml-1">
-                      {owner.email ?? 'N/A'}
-                    </span>
-                  </div>
-                  <div>Dirección:
-                    <span className="font-semibold ml-1">
-                      {owner.address ?? 'N/A'}
-                    </span>
-                  </div>
+
                   <div>
-                    Registrado el:
-                    <span className="font-semibold ml-1">
-                      {new Date(owner.createdAt).toLocaleDateString('es-CL')}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Mascota</TableHead>
-                        <TableHead>Especie</TableHead>
-                        <TableHead>Link</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pets.totalDocs === 0 && (
+                    <Table>
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={2}>No se encontraron mascotas para este cliente.</TableCell>
+                          <TableHead>Mascota</TableHead>
+                          <TableHead>Especie</TableHead>
+                          <TableHead>Link</TableHead>
                         </TableRow>
-                      )}
-                      {pets.totalDocs > 0 && pets.docs.map((pet) => (
-                        <TableRow key={pet.id}>
-                          <TableCell>{pet.name}</TableCell>
-                          <TableCell>
-                            {pet.species === 'dog' ? 'Perro' :
+                      </TableHeader>
+                      <TableBody>
+                        {pets.totalDocs === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={2}>
+                              No se encontraron mascotas para este cliente.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                        {pets.totalDocs > 0 && pets.docs.map((pet) => (
+                          <TableRow key={pet.id}>
+                            <TableCell>{pet.name}</TableCell>
+                            <TableCell>
+                              {pet.species === 'dog' ? 'Perro' :
                               pet.species === 'cat' ? 'Gato' : 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            <Link
-                              href={`/dashboard/mascotas/${pet.id}`}
-                              className="dark:text-blue-500 text-blue-600 hover:underline flex items-center gap-1"
-                            >
-                              Ver Detalles <IconLink size={16} />
-                            </Link>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                            </TableCell>
+                            <TableCell>
+                              <Link
+                                href={`/dashboard/mascotas/${pet.id}`}
+                                className="dark:text-blue-500 text-blue-600 hover:underline flex items-center gap-1"
+                              >
+                                Ver Detalles <IconLink size={16} />
+                              </Link>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </CardContent>
             </Card>
