@@ -19,6 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import MediaViewer from '@/components/MediaViewer'
+import { Media } from '@/payload-types'
 
 
 export default async function PetHistoryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -47,13 +49,13 @@ export default async function PetHistoryPage({ params }: { params: Promise<{ id:
     limit: 50,
   })
 
-
   return (
     <div className="p-6 space-y-6">
 
       <div >
 
         <div className="space-y-4 flex flex-row gap-8">
+
           <div className="w-1/2">
             <Card className="w-full mb-4">
               <CardHeader>
@@ -115,9 +117,13 @@ export default async function PetHistoryPage({ params }: { params: Promise<{ id:
               </CardFooter>
             </Card>
           </div>
-          <div>
-            photos
+
+          <div className="w-1/2">
+            <MediaViewer
+              media={pet.photos as Media[]}
+            />
           </div>
+
         </div>
 
         <Card className="w-full">
