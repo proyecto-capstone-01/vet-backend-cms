@@ -107,41 +107,25 @@ export default function AnalyticsClient({
           title="Ingresos Totales"
           description="Ingresos totales de este período"
           value={stats.totalIncome}
-          trend="up"
-          percent="12.5%"
           icon={<IconTrendingUp className="size-4" />}
-          footerMain="Trending up this month"
-          footerSub="Ingresos de servicios completados"
         />
         <StatCard
           title="Nuevos Clientes"
           description="Clientes durante este período"
           value={stats.newClients.toString()}
-          trend="down"
-          percent="20%"
           icon={<IconTrendingDown className="size-4" />}
-          footerMain="Este mes"
-          footerSub="Clientes nuevos registrados"
         />
         <StatCard
           title="Cuentas Activas"
           description="Retención total de usuarios"
           value={stats.activeAccounts.toString()}
-          trend="up"
-          percent="12.5%"
           icon={<IconTrendingUp className="size-4" />}
-          footerMain="Total de clientes"
-          footerSub="Clientes en el sistema"
         />
         <StatCard
           title="Tasa de Crecimiento"
           description="Crecimiento intermensual"
           value={stats.growthRate}
-          trend="up"
-          percent="4.5%"
           icon={<IconTrendingUp className="size-4" />}
-          footerMain="Steady performance increase"
-          footerSub="Basado en citas completadas"
         />
       </div>
 
