@@ -2,9 +2,10 @@
 
 import { useOwners } from '@/hooks/useOwners'
 import { GenericDataTable } from '@/components/DataTable'
-import { StatCard } from '@/components/StatCard'
 import { Button } from '@/components/ui/button'
 import type { ColumnDef } from '@tanstack/react-table'
+import { formatRUT } from '@/lib/utils'
+import Link from 'next/link'
 
 interface ClientesContentProps {
   initialData: any[]
@@ -16,21 +17,40 @@ export default function ClientesContent({ initialData }: ClientesContentProps) {
   const columns: ColumnDef<any, any>[] = [
     { accessorKey: 'firstName', header: 'Nombre' },
     { accessorKey: 'lastName', header: 'Apellido' },
-    { accessorKey: 'rut', header: 'Rut' },
-    { accessorKey: 'email', header: 'Email' },
+    { accessorKey: 'rut', header: 'Rut',
+    cell: ({ row }) => {
+      const rut = row.original?.rut
+      return rut ? formatRUT(rut) : 'N/A'
+    }
+    },
+    { accessorKey: 'email', header: 'Email',
+    cell: ({ row }) => {
+      const email = row.original?.email
+      return email ? email : 'N/A'
+    }
+    },
     { accessorKey: 'phoneNumber', header: 'Teléfono' },
-    { accessorKey: 'address', header: 'Dirección' },
+    { accessorKey: 'address', header: 'Dirección',
+    cell: ({ row }) => {
+      const address = row.original?.address
+      return address ? address : 'N/A'
+    }
+    },
     {
       id: 'acciones',
       header: 'Acciones',
       cell: ({ row }) => (
         <Button
           size="sm"
-          variant="destructive"
-          onClick={() => handleDelete(row.original?.id)}
+          variant="outline"
           disabled={loading}
+          asChild
         >
-          Eliminar
+          <Link
+            href={`/dashboard/clientes/${row.original?.id}`}
+          >
+            Historial
+          </Link>
         </Button>
       )
     }
@@ -38,19 +58,10 @@ export default function ClientesContent({ initialData }: ClientesContentProps) {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-center">
-        <div className="w-full max-w-xs">
-          <StatCard 
-            title="Total Clientes" 
-            value={data.length.toString()} 
-            description={'Total de clientes registrados en el sistema.'} 
-          />
-        </div>
-      </div>
       <GenericDataTable 
         columns={columns}
         data={data}
-        title="Lista de Clientes"
+        title="Registro de Clientes"
       />
     </div>
   )

@@ -3,8 +3,6 @@
 import * as React from "react"
 import {
   IconHome,
-  IconClock,
-  IconClipboardList,
   IconUsers,
   IconDog,
   IconPackage,
@@ -15,6 +13,9 @@ import {
   IconListDetails,
   IconHelpCircle,
   IconBook,
+  IconCalendar,
+  IconChartBar,
+  IconMailPlus
 } from "@tabler/icons-react"
 import {
   Sidebar,
@@ -29,11 +30,13 @@ import { usePathname } from "next/navigation"
 
 import { NavMain } from "@/components/nav-main"
 import { NavDocuments } from "@/components/nav-documents"
+import { Icon } from "lucide-react"
+import Image from "next/image"
 
 const data = {
   navMain: [
     {
-      title: "Home",
+      title: "Gestión de horas",
       icon: IconHome,
       url: "/dashboard",
       items: [
@@ -43,21 +46,21 @@ const data = {
       ],
     },
     {
-      title: "Analítica",
-      icon: IconClipboardList,
-      url: "/dashboard/analitica",
-      items: [
-        { title: "Análisis de Visitas", url: "/dashboard/analitica/visitas" },
-        { title: "Análisis de Servicios", url: "/dashboard/analitica/servicios" },
-      ],
-    },
-    {
-      title: "Horas",
-      icon: IconClock,
+      title: "Calendario",
+      icon: IconCalendar,
       url: "/dashboard/horas",
       items: [
         { title: "Calendario con Horas", url: "/dashboard/horas" },
         { title: "Seleccionar Horas para Desplegar", url: "/dashboard/horas/seleccionar" },
+      ],
+    },
+    {
+      title: "Analíticas",
+      icon: IconChartBar,
+      url: "/dashboard/analitica",
+      items: [
+        { title: "Análisis de Visitas", url: "/dashboard/analitica/visitas" },
+        { title: "Análisis de Servicios", url: "/dashboard/analitica/servicios" },
       ],
     },
     {
@@ -85,8 +88,14 @@ const data = {
       items: [{ title: "Tabla con Productos", url: "/dashboard/inventario" }],
     },
     {
-      title: "Contactos",
-      icon: IconClipboardList,
+      title: "Productos",
+      Icon: IconListDetails,
+      url: "/dashboard/productos",
+      icon: IconListDetails,
+    },
+    {
+      title: "Formulario de contacto",
+      icon: IconMailPlus,
       url: "/dashboard/solicitudes-contacto",
       items: [{ title: "Listado de Contactos", url: "/dashboard/solicitudes-contacto" }],
     }
@@ -112,11 +121,6 @@ const data = {
       icon: IconFileWord,
     },
     {
-      name: "Productos",
-      url: "/admin/collections/products",
-      icon: IconListDetails,
-    },
-    {
       name: "Profesionales",
       url: "/admin/collections/team",
       icon: IconUsers,
@@ -140,6 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <a href="/dashboard">
+                <Image src="/icon.png" alt="Clínica Pucará Logo" width={32} height={32} />
                 <span className="text-base font-semibold">Clínica Pucará</span>
               </a>
             </SidebarMenuButton>
@@ -149,7 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild>
               <a
                 href="/dashboard/recetas"
-                className="flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors duration-200 ease-linear"
+                className="flex items-center justify-center gap-2 rounded-md bg-purple-700 dark:bg-purple-900 dark:text-white px-3 py-2 text-sm font-medium text-primary-foreground transition-colors duration-200 ease-linear"
               >
                 <IconFileText className="size-4" />
                 Crear Receta
@@ -171,7 +176,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <a
-                href="/dashboard/manualdeusuario"
+                href="/dashboard/manual-de-usuario"
                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${
                   pathname === "/dashboard/manual-usuario"
                     ? "text-foreground"

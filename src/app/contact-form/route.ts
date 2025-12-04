@@ -32,23 +32,54 @@ export const POST = async (request: Request) => {
   const payload = await getPayload({ config: configPromise })
   const data = await request.json()
 
+  const SEND_CLIENT_CONFIRMATION_EMAIL = true
+  const SEND_INTERNAL_NOTIFICATION_EMAIL = true
+
+  const requiredFields = ['name', 'email', 'message']
+
+  const forbiddenSubstrings = ['http://', 'https://', 'www.', '.com', '.net', '.org', '.io', '.co', '://', 'href=', '<a ', '<script', 'javascript:', 'onclick=', 'onerror=', '.exe', '.zip', '.rar', '.dll', '.bat', '.cmd', '.ps1']
+
+  for (const field of requiredFields) {
+    const value = data[field]
+    if (typeof value === 'string') {
+      for (const substring of forbiddenSubstrings) {
+        if (value.includes(substring)) {
+          return Response.json(
+            { error: `Invalid content` },
+            { status: 400, headers: corsHeaders(origin) },
+          )
+        }
+      }
+    }
+  }
+
+  for (const field of requiredFields) {
+    if (!data[field]) {
+      return Response.json(
+        { error: `Missing required field: ${field}` },
+        { status: 400, headers: corsHeaders(origin) },
+      )
+    }
+  }
+
   const contactForm = await payload.create({
     collection: 'contact-form',
-    data,
+    data
   })
 
-  const emailClientResponse = await sendContactFormConfirmationEmail(contactForm, payload.sendEmail)
-
-  const emailInternalResponse = await sendContactFormNotificationEmail(contactForm, payload.sendEmail)
-
-  console.log('---')
-  console.log('c:', contactForm)
+  try {
+    if (SEND_CLIENT_CONFIRMATION_EMAIL) {
+      await sendContactFormConfirmationEmail(contactForm, payload.sendEmail)
+    }
+    if (SEND_INTERNAL_NOTIFICATION_EMAIL) {
+      await sendContactFormNotificationEmail(contactForm, payload.sendEmail)
+    }
+  } catch (error) {
+    console.error('Error sending contact form emails:', error)
+  }
 
   return Response.json(
     { message: 'Contact request sent' },
     { headers: corsHeaders(origin) },
   )
 }
-
-
-

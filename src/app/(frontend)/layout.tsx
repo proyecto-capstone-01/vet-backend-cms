@@ -19,8 +19,6 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const payload = await getPayload({ config: payloadConfig })
   const { user } = await payload.auth({ headers })
 
-  console.log('main layout ran')
-
   if (!user) return redirect('/admin/login?redirect=%2F')
 
   return (

@@ -6,6 +6,7 @@ import config from "@payload-config"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Toaster } from "@/components/ui/sonner"
 
 export default async function DashboardLayout({
   children,
@@ -21,6 +22,15 @@ export default async function DashboardLayout({
 
   if (!isAuthorized) {
     redirect("/unauthorized")
+  } else if (!user) {
+    redirect("/login")
+  }
+
+  const userProp = {
+    name: user.firstName + " " + user.lastName,
+    email: user.email,
+    // @ts-ignore
+    avatarUrl: user.profileImage?.sizes?.square?.url.toString(),
   }
 
   return (
@@ -28,8 +38,9 @@ export default async function DashboardLayout({
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader user={userProp} />
         <div className="flex flex-1 flex-col">{children}</div>
+        <Toaster />
       </SidebarInset>
     </SidebarProvider>
   )

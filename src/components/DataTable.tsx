@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import * as React from "react"
+import * as React from 'react'
 import {
   ColumnDef,
   flexRender,
@@ -8,7 +8,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from '@tanstack/react-table'
 import {
   Table,
   TableBody,
@@ -16,22 +16,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -40,8 +40,8 @@ import {
   IconLayoutColumns,
   IconChevronDown,
   IconSearch,
-} from "@tabler/icons-react"
-import { Input } from "@/components/ui/input"
+} from '@tabler/icons-react'
+import { Input } from '@/components/ui/input'
 
 interface GenericDataTableProps<TData> {
   columns: ColumnDef<TData, any>[]
@@ -67,16 +67,14 @@ export function GenericDataTable<TData>({
     pageSize: 10,
   })
 
-  const [globalFilter, setGlobalFilter] = React.useState("")
+  const [globalFilter, setGlobalFilter] = React.useState('')
 
   // Filtrado global — busca en todas las columnas visibles
   const filteredData = React.useMemo(() => {
     if (!globalFilter) return data
     const search = globalFilter.toLowerCase()
     return data.filter((row: any) =>
-      Object.values(row).some((value) =>
-        String(value).toLowerCase().includes(search)
-      )
+      Object.values(row).some((value) => String(value).toLowerCase().includes(search)),
     )
   }, [data, globalFilter])
 
@@ -103,6 +101,7 @@ export function GenericDataTable<TData>({
             <div className="relative">
               <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
+                type="text"
                 placeholder="Buscar..."
                 value={globalFilter}
                 onChange={(e) => setGlobalFilter(e.target.value)}
@@ -114,7 +113,7 @@ export function GenericDataTable<TData>({
           {enableColumnVisibility && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" >
                   <IconLayoutColumns className="mr-1 h-4 w-4" />
                   <span className="hidden lg:inline">Columnas</span>
                   <IconChevronDown className="ml-1 h-4 w-4" />
@@ -128,7 +127,7 @@ export function GenericDataTable<TData>({
                     <DropdownMenuCheckboxItem
                       key={column.id}
                       checked={column.getIsVisible()}
-                      onCheckedChange={(v) => column.toggleVisibility(!!v)}
+                      onCheckedChange={(v) => column.toggleVisibility(v)}
                       className="capitalize"
                     >
                       {column.id}
@@ -165,7 +164,8 @@ export function GenericDataTable<TData>({
                       key={cell.id}
                       className="max-w-xs overflow-hidden whitespace-nowrap text-ellipsis"
                     >
-                      {typeof flexRender(cell.column.columnDef.cell, cell.getContext()) === "string" ? (
+                      {typeof flexRender(cell.column.columnDef.cell, cell.getContext()) ===
+                      'string' ? (
                         <span className="truncate block">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </span>
@@ -190,12 +190,12 @@ export function GenericDataTable<TData>({
       {/* Footer */}
       <div className="flex items-center justify-between px-4">
         <div className="text-muted-foreground text-sm hidden lg:block">
-          Mostrando{" "}
-          {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–{" "}
+          Mostrando{' '}
+          {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–{' '}
           {Math.min(
             (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            filteredData.length
-          )}{" "}
+            filteredData.length,
+          )}{' '}
           de {filteredData.length}
         </div>
 
@@ -208,7 +208,7 @@ export function GenericDataTable<TData>({
               value={`${table.getState().pagination.pageSize}`}
               onValueChange={(value) => table.setPageSize(Number(value))}
             >
-              <SelectTrigger size="sm" className="w-20" id="rows-per-page">
+              <SelectTrigger className="w-20" id="rows-per-page">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent side="top">

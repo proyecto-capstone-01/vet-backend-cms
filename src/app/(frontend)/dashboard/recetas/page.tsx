@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import jsPDF from 'jspdf'
 import { Button } from '@/components/ui/button'
-import fondoBase64 from '../../../utils/fondoBase64'
+import fondoBase64 from '@/app/utils/fondoBase64'
 
 export default function RecetaForm() {
   const [formData, setFormData] = useState({

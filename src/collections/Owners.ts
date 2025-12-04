@@ -1,7 +1,6 @@
-import type { CollectionConfig } from 'payload';
+import type { CollectionConfig } from 'payload'
 import { isDashboardUser } from '@/access/isDashboardUser'
 import { isAdmin } from '@/access/isAdmin'
-import { authenticated } from '@/access/authenticated'
 
 export const Owners: CollectionConfig = {
   slug: 'owners',
@@ -39,6 +38,7 @@ export const Owners: CollectionConfig = {
         en: 'RUT',
         es: 'RUT'
       },
+      unique: true,
       required: true
     },
     {
@@ -48,6 +48,7 @@ export const Owners: CollectionConfig = {
         en: 'Email',
         es: 'Correo Electrónico'
       },
+      unique: true,
       required: false
     },
     {
@@ -57,6 +58,7 @@ export const Owners: CollectionConfig = {
         en: 'Phone Number',
         es: 'Número de Teléfono'
       },
+      unique: true,
       required: true
     },
     {
@@ -83,6 +85,8 @@ export const Owners: CollectionConfig = {
             const lastName = data.lastName || originalDoc?.lastName || '';
             // @ts-ignore
             const rut = data.rut || originalDoc?.rut || '';
+            // @ts-ignore
+            data.rut = rut.replace(/\./g, '').replace(/-/g, '').toUpperCase()
             return `${firstName} ${lastName} - ${rut}`;
           }
         ]
@@ -92,11 +96,11 @@ export const Owners: CollectionConfig = {
   labels: {
     plural: {
       en: 'Owners',
-      es: 'Propietarios'
+      es: 'Clientes / Dueños'
     },
     singular: {
       en: 'owner',
-      es: 'propietario'
+      es: 'cliente / dueño'
     }
   }
 }

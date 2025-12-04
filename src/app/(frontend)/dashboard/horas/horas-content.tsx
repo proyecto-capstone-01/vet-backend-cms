@@ -1,22 +1,35 @@
 'use client'
 
-import { useAppointments } from '@/hooks/useAppointments'
+import { AppointmentWithRelations, useAppointments } from '@/hooks/useAppointments'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useState } from 'react'
-import { format, startOfWeek, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
+import Link from 'next/link'
+import type { Appointment } from '@/payload-types'
+import {
+  format,
+  startOfWeek,
+  addDays,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+} from 'date-fns'
+import { isoTimeToHHmm } from '@/lib/timezone'
+import { speciesToSpanish, statusToSpanish } from '@/app/utils/uiTranslations'
 
-interface HorasContentProps {
-  initialData: any[]
-}
+export default function HorasContent({ initialData }: { initialData: AppointmentWithRelations[] }) {
 
-export default function HorasContent({ initialData }: HorasContentProps) {
-  const { data } = useAppointments(initialData)
-  const [selectedWeekStart, setSelectedWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }))
+  const { data }: { data: AppointmentWithRelations[] } = useAppointments(initialData)
+
+  const [selectedWeekStart, setSelectedWeekStart] = useState(
+    startOfWeek(new Date(), { weekStartsOn: 1 }),
+  )
+
   const [selectedMonth, setSelectedMonth] = useState(new Date())
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week')
+  const [viewMode, setViewMode] = useState<'month' | 'week'>('week')
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(selectedWeekStart, i))
 
@@ -30,25 +43,20 @@ export default function HorasContent({ initialData }: HorasContentProps) {
 
     const filtered = data
       .filter((apt) => {
-        let fechaStr = apt.fecha
+        let fechaStr = apt.date
 
-        if (apt.fecha instanceof Date) {
-          fechaStr = format(apt.fecha, 'yyyy-MM-dd')
-        }
-        else if (typeof apt.fecha === 'number') {
-          fechaStr = format(new Date(apt.fecha), 'yyyy-MM-dd')
-        }
-        else if (typeof apt.fecha === 'string' && apt.fecha.includes('T')) {
-          fechaStr = apt.fecha.split('T')[0]
+        const dateObj = new Date(apt.date)
+        if (!isNaN(dateObj.getTime())) {
+          fechaStr = format(dateObj, 'yyyy-MM-dd')
         }
 
         const matches = fechaStr === dayString
         if (matches) {
-          console.log('Coincidencia encontrada:', apt.nombre, 'fecha:', fechaStr)
+          console.log('Coincidencia encontrada:', apt.pet.name, 'fecha:', fechaStr)
         }
         return matches
       })
-      .sort((a, b) => a.hora.localeCompare(b.hora))
+      .sort((a, b) => a.time.localeCompare(b.time))
 
     console.log(`Citas encontradas para ${dayString}:`, filtered.length)
     return filtered
@@ -56,37 +64,43 @@ export default function HorasContent({ initialData }: HorasContentProps) {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
-      Pendiente: 'bg-yellow-100 text-yellow-800',
-      Completado: 'bg-green-100 text-green-800',
-      Cancelado: 'bg-red-100 text-red-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      completed: 'bg-green-100 text-green-800',
+      canceled: 'bg-red-100 text-red-800',
     }
     return variants[status] || variants['Pendiente']
   }
 
-  const renderAppointmentItem = (apt: any) => (
+  const renderAppointmentItem = (apt: AppointmentWithRelations) => (
     <div
       key={apt.id}
       className={`border rounded-lg p-2 text-xs space-y-1 ${
-        apt.estado === 'Completado'
+        apt.status === 'completed'
           ? 'bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-700'
-          : apt.estado === 'Cancelado'
+          : apt.status === 'canceled'
             ? 'bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-700'
             : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-gray-700'
       }`}
     >
       <div className="flex justify-between items-start gap-1">
-        <div className="font-semibold text-blue-600 dark:text-blue-400">{apt.hora}</div>
-        <Badge className={`${getStatusBadge(apt.estado)} text-xs py-0`}>{apt.estado}</Badge>
+        <div className="font-semibold text-blue-600 dark:text-blue-400">{isoTimeToHHmm(apt.time)}</div>
+        <Badge className={`${getStatusBadge(apt.status)} text-xs py-0`}>
+          {statusToSpanish[apt.status] || apt.status}
+        </Badge>
       </div>
       <div>
-        <div className="font-medium text-black dark:text-white">{apt.nombre}</div>
-        <div className="text-gray-600 dark:text-gray-300">{apt.tipo}</div>
+        <div className="font-medium text-black dark:text-white">
+          {apt.pet.name}
+        </div>
+        <div className="text-gray-600 dark:text-gray-300">
+          {speciesToSpanish[apt.pet.species] || apt.pet.species}
+        </div>
       </div>
     </div>
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-5">
       {/* View Toggle Buttons */}
       <div className="flex gap-2">
         <Button
@@ -101,11 +115,35 @@ export default function HorasContent({ initialData }: HorasContentProps) {
         >
           Vista Semanal
         </Button>
+        <Button asChild variant="outline" className="ml-auto">
+          <Link href="/dashboard/horas/horarios">Ver horarios</Link>
+        </Button>
       </div>
 
       {/* Week View */}
       {viewMode === 'week' && (
         <div className="space-y-4">
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedWeekStart(addDays(selectedWeekStart, -7))}
+            >
+              ← Semana Anterior
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
+            >
+              Hoy
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedWeekStart(addDays(selectedWeekStart, 7))}
+            >
+              Próxima Semana →
+            </Button>
+          </div>
+
           <div className="grid grid-cols-7 gap-2">
             {weekDays.map((day) => {
               const appointments = getAppointmentsByDay(day)
@@ -135,24 +173,6 @@ export default function HorasContent({ initialData }: HorasContentProps) {
               )
             })}
           </div>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setSelectedWeekStart(addDays(selectedWeekStart, -7))}
-            >
-              ← Semana Anterior
-            </Button>
-            <Button variant="outline" onClick={() => setSelectedWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
-              Hoy
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setSelectedWeekStart(addDays(selectedWeekStart, 7))}
-            >
-              Próxima Semana →
-            </Button>
-          </div>
         </div>
       )}
 
@@ -166,7 +186,11 @@ export default function HorasContent({ initialData }: HorasContentProps) {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}
+                onClick={() =>
+                  setSelectedMonth(
+                    new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1),
+                  )
+                }
               >
                 ← Mes Anterior
               </Button>
@@ -175,7 +199,11 @@ export default function HorasContent({ initialData }: HorasContentProps) {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))}
+                onClick={() =>
+                  setSelectedMonth(
+                    new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1),
+                  )
+                }
               >
                 Próximo Mes →
               </Button>
@@ -191,7 +219,7 @@ export default function HorasContent({ initialData }: HorasContentProps) {
             ))}
 
             {/* Calendar days */}
-              {monthDays.map((day) => {
+            {monthDays.map((day) => {
               const appointments = getAppointmentsByDay(day)
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
               const isCurrentMonth = isSameMonth(day, selectedMonth)
@@ -200,14 +228,16 @@ export default function HorasContent({ initialData }: HorasContentProps) {
                 <Card
                   key={format(day, 'yyyy-MM-dd')}
                   className={`p-2 min-h-28 overflow-y-auto ${
-                    !isCurrentMonth 
-                      ? 'bg-gray-50 dark:bg-gray-900' 
-                      : isToday 
-                        ? 'border-blue-500 border-2 bg-blue-50 dark:bg-blue-950' 
+                    !isCurrentMonth
+                      ? 'bg-gray-50 dark:bg-gray-900'
+                      : isToday
+                        ? 'border-blue-500 border-2 bg-blue-50 dark:bg-blue-950'
                         : 'bg-white dark:bg-slate-950'
                   }`}
                 >
-                  <div className={`font-bold mb-2 ${isToday ? 'text-blue-600 dark:text-blue-400' : isCurrentMonth ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600'}`}>
+                  <div
+                    className={`font-bold mb-2 ${isToday ? 'text-blue-600 dark:text-blue-400' : isCurrentMonth ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600'}`}
+                  >
                     {format(day, 'd')}
                   </div>
                   <div className="space-y-1">

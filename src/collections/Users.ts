@@ -15,8 +15,8 @@ export const Users: CollectionConfig = {
     useAsTitle: 'fullName',
     group: {
       es: 'Administración',
-      en: 'Administration'
-    }
+      en: 'Administration',
+    },
   },
   auth: true,
   hooks: {
@@ -49,9 +49,8 @@ export const Users: CollectionConfig = {
           required: true,
           label: {
             en: 'First name',
-            es: 'Nombre'
+            es: 'Nombre',
           },
-          access: { read: () => true },
         },
         {
           name: 'lastName',
@@ -61,9 +60,8 @@ export const Users: CollectionConfig = {
           required: true,
           label: {
             en: 'Last name',
-            es: 'Apellido'
+            es: 'Apellido',
           },
-          access: { read: () => true },
         },
       ],
     },
@@ -96,61 +94,50 @@ export const Users: CollectionConfig = {
         {
           label: {
             en: 'Admin',
-            es: 'Administrador'
+            es: 'Administrador',
           },
           value: 'admin',
         },
         {
           label: {
             en: 'Editor',
-            es: 'Editor'
+            es: 'Editor',
           },
           value: 'editor',
         },
         {
           label: {
             en: 'Blogger',
-            es: 'Blogger'
+            es: 'Blogger',
           },
-          value: 'blogger'
+          value: 'blogger',
         },
         {
           label: {
             en: 'Web editor',
-            es: 'Editor web'
+            es: 'Editor web',
           },
-          value: 'webEditor'
+          value: 'webEditor',
         },
         {
           label: {
             en: 'Dashboard user',
-            es: 'Usuario del dashboard'
+            es: 'Usuario del dashboard',
           },
-          value: 'dashboard'
-        }
-      ]
-    },
-    {
-      name: 'sessions',
-      type: 'array',
-      access: { 
-        read: ({ req }) => req.user?.roles?.includes('admin') ?? false
-      },
-      fields: [
-        {
-          name: 'id',
-          type: 'text',
+          value: 'dashboard',
         },
-        {
-          name: 'createdAt',
-          type: 'date',
-        },
-        {
-          name: 'expiresAt',
-          type: 'date',
-        },
+
       ],
     },
+    {
+      name: 'profileImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: {
+        en: 'Profile Image',
+        es: 'Imagen de perfil',
+      },
+    }
   ],
   labels: {
     singular: {

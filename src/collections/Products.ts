@@ -18,22 +18,6 @@ export const Products: CollectionConfig = {
   },
   fields: [
     {
-      name: 'inventoryItem',
-      type: 'relationship',
-      relationTo: 'inventory',
-      required: false,
-      label: {
-        en: 'Inventory item (optional)',
-        es: 'Ítem de inventario (opcional)'
-      },
-      admin: {
-        description: {
-          en: 'Link a product to an internal inventory item to inherit name, description, images and stock status',
-          es: 'Vincula un producto a un ítem de inventario interno para heredar nombre, descripción, imágenes y estado de stock'
-        }
-      }
-    },
-    {
       name: 'name',
       type: 'text',
       label: {
@@ -94,6 +78,7 @@ export const Products: CollectionConfig = {
       name: 'images',
       type: 'upload',
       hasMany: true,
+      required: true,
       relationTo: 'media',
       label: {
         en: 'Product images',

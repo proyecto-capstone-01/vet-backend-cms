@@ -1,6 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
-// import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
-// import { s3Storage } from '@payloadcms/storage-s3'
+import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
 import { resendAdapter } from '@payloadcms/email-resend'
 
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
@@ -30,11 +29,12 @@ import { Appointments } from '@/collections/Appointments'
 import { Blog } from '@/collections/Blog'
 import { BlogCategories } from '@/collections/BlogCategories'
 import { BlogTags } from '@/collections/BlogTags'
-import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
+import { Hours } from '@/collections/Hours'
+import { ClosedDays } from '@/collections/ClosedDays'
+import { BlockedSlots } from '@/collections/BlockedSlots'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-// const storageEnv= process.env.STORAGE_ENV || 'local'
 
 export default buildConfig({
   admin: {
@@ -54,6 +54,7 @@ export default buildConfig({
       'http://localhost:3000',
       'http://localhost:4321',
       'http://127.0.0.1:3000',
+      'https://*.veterinariapucara.cl',
     ],
   },
   email: resendAdapter({
@@ -64,7 +65,7 @@ export default buildConfig({
   i18n: {
     fallbackLanguage: 'es',
     supportedLanguages: { es, en },
-    translations: customTranslations
+    translations: customTranslations,
   },
   collections: [
     Users,
@@ -81,6 +82,9 @@ export default buildConfig({
     Blog,
     BlogCategories,
     BlogTags,
+    Hours,
+    ClosedDays,
+    BlockedSlots,
   ],
   telemetry: false,
   editor: lexicalEditor(),
@@ -95,7 +99,6 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
-    payloadCloudPlugin(),
     uploadthingStorage({
       collections: {
         media: true,
@@ -105,5 +108,6 @@ export default buildConfig({
         acl: 'public-read',
       },
     }),
+    payloadCloudPlugin(),
   ],
 })

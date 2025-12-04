@@ -3,8 +3,8 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { usePets } from '@/hooks/usePets'
 import { GenericDataTable } from '@/components/DataTable'
-import { StatCard } from '@/components/StatCard'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 interface MascotasContentProps {
   initialData: any[]
@@ -12,33 +12,53 @@ interface MascotasContentProps {
 
 export default function MascotasContent({ initialData }: MascotasContentProps) {
   const { data, loading, handleDelete } = usePets(initialData)
+
   const columns: ColumnDef<any, any>[] = [
     { accessorKey: 'name', header: 'Nombre' },
-    { accessorKey: 'microchipNumber', header: 'Microchip' },
-    { accessorKey: 'species', header: 'Especie' },
-    { accessorKey: 'breed', header: 'Raza' },
     {
-      id: 'dateOfBirth',
-      header: 'Fecha de nacimiento',
-      accessorFn: (row) =>
-        (row as any).dateOfBirth
-          ? new Date((row as any).dateOfBirth).toLocaleDateString()
-          : ''
+      accessorKey: 'microchipNumber',
+      header: 'Microchip',
+      cell: ({ row }) => row.original?.microchipNumber ?? 'N/A',
     },
-    { accessorKey: 'sex', header: 'Sexo' },
-    { accessorKey: 'color', header: 'Color' },
+    {
+      accessorKey: 'species',
+      header: 'Especie',
+      cell: ({ row }) =>
+        row.original?.species === 'dog'
+          ? 'Perro'
+          : row.original?.species === 'cat'
+            ? 'Gato'
+            : 'N/A',
+    },
+    { accessorKey: 'breed', header: 'Raza', cell: ({ row }) => row.original?.breed ?? 'N/A' },
+    {
+      accessorKey: 'sex',
+      header: 'Sexo',
+      cell: ({ row }) =>
+        row.original?.sex === 'male' ? 'Macho' : row.original?.sex === 'female' ? 'Hembra' : 'N/A',
+    },
+    { accessorKey: 'color', header: 'Color', cell: ({ row }) => row.original?.color ?? 'N/A' },
     {
       id: 'owner',
       header: 'Dueño',
       accessorFn: (row) =>
-        (row as any).owner?.nameRutCombination ??
-        `${(row as any).owner?.firstName ?? ''} ${(row as any).owner?.lastName ?? ''}`.trim()
+        `${(row as any).owner?.firstName ?? ''} ${(row as any).owner?.lastName ?? ''}`.trim(),
     },
     {
       id: 'size',
-      header: 'Peso / Altura',
-      accessorFn: (row) =>
-        `${(row as any).weight ?? ''}${(row as any).weight ? ' kg' : ''} / ${(row as any).height ?? ''}${(row as any).height ? ' cm' : ''}`
+      header: 'Peso',
+      cell: ({ row }) => {
+        const weight = (row.original as any).weight
+        return weight ? `${weight} kg` : 'N/A'
+      },
+    },
+    {
+      id: 'height',
+      header: 'Altura',
+      cell: ({ row }) => {
+        const height = (row.original as any).height
+        return height ? `${height} cm` : 'N/A'
+      },
     },
     {
       id: 'acciones',
@@ -46,32 +66,23 @@ export default function MascotasContent({ initialData }: MascotasContentProps) {
       cell: ({ row }) => (
         <Button
           size="sm"
-          variant="destructive"
-          onClick={() => handleDelete((row.original as any).id)}
+          variant="outline"
           disabled={loading}
+          asChild
         >
-          Eliminar
+          <Link
+            href={`/dashboard/mascotas/${row.original?.id}`}
+          >
+            Historial
+          </Link>
         </Button>
-      )
-    }
+      ),
+    },
   ]
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-center">
-        <div className="w-full max-w-xs">
-          <StatCard 
-            title="Total Mascotas" 
-            value={data.length} 
-            description={'Total de mascotas registrados en el sistema.'} 
-          />
-        </div>
-      </div>
-      <GenericDataTable 
-        columns={columns}
-        data={data}
-        title="Lista de Mascotas"
-      />
+      <GenericDataTable columns={columns} data={data} title="Registro de Mascotas" />
     </div>
   )
 }
