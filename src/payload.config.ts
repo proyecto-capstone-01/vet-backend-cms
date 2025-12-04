@@ -49,14 +49,7 @@ export default buildConfig({
       beforeDashboard: ['@/components/beforeDashboard'],
     },
   },
-  cors: {
-    origins: [
-      'http://localhost:3000',
-      'http://localhost:4321',
-      'http://127.0.0.1:3000',
-      'https://*.veterinariapucara.cl',
-    ],
-  },
+  cors: '*',
   email: resendAdapter({
     defaultFromAddress: process.env.DEFAULT_ADDRESS || '',
     defaultFromName: process.env.DEFAULT_EMAIL_NAME || 'Admin',
