@@ -66,9 +66,8 @@ export default function AnalyticsClient({
         const chartData = generateChartData(filteredAppointments, parseInt(dateRange))
         setVentasData(chartData)
 
-        // Placeholder income: number of completed appointments (replace with sum when price exists)
-        const completedCount = filteredAppointments.filter((apt: Appointment) => apt.status === 'completed').length
-        const totalIncome = completedCount
+        // Total income: sum of service prices for confirmed/completed appointments
+        const totalIncomeNumber = computeTotalIncome(filteredAppointments)
 
         const newClientsThisMonth = owners.filter((client: Owner) => {
           if (!client.createdAt) return false
@@ -79,7 +78,7 @@ export default function AnalyticsClient({
         }).length
 
         setStats({
-          totalIncome: `$${totalIncome.toLocaleString('es-CL')}`,
+          totalIncome: `$${totalIncomeNumber.toLocaleString('es-CL')}`,
           newClients: newClientsThisMonth,
           activeAccounts: owners.length,
           growthRate: calculateGrowthRate(filteredAppointments).toFixed(1) + '%',
@@ -400,4 +399,20 @@ function calculateGrowthRate(appointments: Appointment[]): number {
 
   if (firstHalf === 0) return 0
   return ((secondHalf - firstHalf) / firstHalf) * 100
+}
+
+function computeTotalIncome(appointments: Appointment[]): number {
+  // Sum prices for appointments with status confirmed or completed
+  let total = 0
+  for (const apt of appointments) {
+    if (apt.status !== 'confirmed' && apt.status !== 'completed') continue
+    const services = apt.services as any[]
+    for (const svc of services || []) {
+      const price = typeof svc === 'object' ? (svc?.price ?? null) : null
+      if (typeof price === 'number') {
+        total += price
+      }
+    }
+  }
+  return total
 }
