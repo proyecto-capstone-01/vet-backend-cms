@@ -54,9 +54,9 @@ export default async function PetHistoryPage({ params }: { params: Promise<{ id:
 
       <div >
 
-        <div className="space-y-4 flex flex-row gap-8">
+        <div className="space-y-4 flex flex-col md:flex-row md:gap-8">
 
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2">
             <Card className="w-full mb-4">
               <CardHeader>
                 <CardTitle className="text-2xl">
@@ -118,7 +118,7 @@ export default async function PetHistoryPage({ params }: { params: Promise<{ id:
             </Card>
           </div>
 
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2">
             <MediaViewer
               media={pet.photos as Media[]}
             />
