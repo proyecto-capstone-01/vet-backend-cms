@@ -3,7 +3,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter,
+
   CardDescription, CardAction
 } from '@/components/ui/card'
 import { getPayload } from 'payload'
@@ -22,11 +22,12 @@ import { IconLink } from '@tabler/icons-react'
 import Link from 'next/link'
 
 
-export default async function ClientHistoryPage({ params }: { params: { id: string } }) {
-  const petId = params.id
-  if (!petId) return <div className="p-6">ID de mascota no proporcionado.</div>
 
-  const petIdNumber = parseInt(petId, 10)
+export default async function ClientHistoryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  if (!id) return <div className="p-6">ID de mascota no proporcionado.</div>
+
+  const petIdNumber = parseInt(id, 10)
   if (isNaN(petIdNumber)) return <div className="p-6">ID de mascota inválido.</div>
 
   const payload = await getPayload({ config })

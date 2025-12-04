@@ -2,9 +2,10 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { isoTimeToHHmm } from '@/lib/timezone'
 import type { Appointment } from '@/payload-types'
+import { AppointmentWithRelations } from '@/hooks/useAppointments'
 
 
-export async function getAppointmentsData(): Promise<Appointment[]> {
+export async function getAppointmentsData(): Promise<AppointmentWithRelations[]> {
   const payload = await getPayload({ config })
 
   try {
@@ -15,7 +16,7 @@ export async function getAppointmentsData(): Promise<Appointment[]> {
       sort: ['-date', 'time'],
     })
 
-    return appointments.docs
+    return appointments.docs as AppointmentWithRelations[]
   } catch (error) {
     console.error('Error fetching appointments:', error)
     return []

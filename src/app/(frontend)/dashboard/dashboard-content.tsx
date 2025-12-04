@@ -1,6 +1,6 @@
 'use client'
 
-import { useAppointments } from '@/hooks/useAppointments'
+import { AppointmentWithRelations, useAppointments } from '@/hooks/useAppointments'
 import { GenericDataTable } from '@/components/DataTable'
 import { StatCard } from '@/components/StatCard'
 import { Badge } from '@/components/ui/badge'
@@ -69,11 +69,11 @@ const formatRut = (rut: string): string => {
   return `${formattedBody}-${dv}`
 }
 
-export default function DashboardContent({ initialData }: { initialData: Appointment[] }) {
+export default function DashboardContent({ initialData }: { initialData: AppointmentWithRelations[] }) {
   const { data, loading, handleConfirm, handleReject } = useAppointments(initialData)
 
   const [processingId, setProcessingId] = useState<number | null>(null)
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(null)
   const [open, setOpen] = useState(false)
 
 
@@ -83,6 +83,7 @@ export default function DashboardContent({ initialData }: { initialData: Appoint
         ...item,
         estado: statusToSpanish[item.status] || 'Pendiente',
         tipo: item.pet ? speciesToSpanish[item.pet.species] || item.pet.species : '',
+        // @ts-ignore
         servicio: item.services && item.services.length > 0 ? item.services[0].title : 'Sin servicio',
       }))
     } catch {

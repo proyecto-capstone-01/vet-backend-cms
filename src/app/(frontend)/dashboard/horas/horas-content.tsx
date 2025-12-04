@@ -1,6 +1,6 @@
 'use client'
 
-import { useAppointments } from '@/hooks/useAppointments'
+import { AppointmentWithRelations, useAppointments } from '@/hooks/useAppointments'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -20,9 +20,9 @@ import {
 import { isoTimeToHHmm } from '@/lib/timezone'
 import { speciesToSpanish, statusToSpanish } from '@/app/utils/uiTranslations'
 
-export default function HorasContent({ initialData }: { initialData: Appointment[] }) {
+export default function HorasContent({ initialData }: { initialData: AppointmentWithRelations[] }) {
 
-  const { data }: { data: Appointment[] } = useAppointments(initialData)
+  const { data }: { data: AppointmentWithRelations[] } = useAppointments(initialData)
 
   const [selectedWeekStart, setSelectedWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 }),
@@ -71,7 +71,7 @@ export default function HorasContent({ initialData }: { initialData: Appointment
     return variants[status] || variants['Pendiente']
   }
 
-  const renderAppointmentItem = (apt: Appointment) => (
+  const renderAppointmentItem = (apt: AppointmentWithRelations) => (
     <div
       key={apt.id}
       className={`border rounded-lg p-2 text-xs space-y-1 ${

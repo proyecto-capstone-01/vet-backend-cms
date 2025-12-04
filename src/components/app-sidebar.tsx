@@ -117,12 +117,12 @@ const data = {
     },
     {
       name: "Publicaciones del Blog",
-      url: "/admin/collections/blogpost",
+      url: "/admin/collections/blog",
       icon: IconFileWord,
     },
     {
       name: "Profesionales",
-      url: "/admin/collections/professional",
+      url: "/admin/collections/team",
       icon: IconUsers,
     },
     {

@@ -1,10 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import type { Appointment } from '@/payload-types'
+import type { Appointment, Pet, Service, Owner } from '@/payload-types'
 import { toast } from "sonner"
 
-export function useAppointments(initialData: Appointment[] = []) {
+export interface PetWithRelations extends Pet {
+  owner: Owner
+}
+
+export interface AppointmentWithRelations extends Appointment {
+  pet: PetWithRelations
+  service: Service
+}
+
+
+export function useAppointments(initialData: AppointmentWithRelations[] = []) {
   const [data, setData] = useState(initialData)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -18,7 +28,7 @@ export function useAppointments(initialData: Appointment[] = []) {
       const response = await fetch('/api/appointments')
       if (response.ok) {
         const appointments = await response.json()
-        setData(appointments.docs as Appointment[])
+        setData(appointments.docs as AppointmentWithRelations[])
       }
     } catch (err) {
       console.error('Error refetching appointments:', err)
