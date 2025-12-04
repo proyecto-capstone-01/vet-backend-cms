@@ -13,3 +13,8 @@ export const speciesToSpanish: Record<string, string> = {
   dog: 'Perro',
   cat: 'Gato',
 }
+
+export const sexToSpanish: Record<string, string> = {
+  male: 'Macho',
+  female: 'Hembra',
+}
