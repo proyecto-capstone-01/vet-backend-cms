@@ -6,18 +6,37 @@ export const Users: CollectionConfig = {
   slug: 'users',
   access: {
     create: isAdmin,
-    read: isAdminOrSelf,
+    read: () => true,
+
     update: isAdminOrSelf,
     delete: isAdmin,
   },
   admin: {
-    useAsTitle: 'email',
+    useAsTitle: 'fullName',
     group: {
       es: 'Administración',
       en: 'Administration',
     },
   },
   auth: true,
+  hooks: {
+    beforeChange: [
+      async ({ data }) => {
+        if (data.firstName || data.lastName) {
+          data.fullName = `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim()
+        }
+        return data
+      },
+    ],
+    afterRead: [
+      async ({ doc }) => {
+        if (doc.firstName || doc.lastName) {
+          doc.fullName = `${doc.firstName ?? ''} ${doc.lastName ?? ''}`.trim()
+        }
+        return doc
+      },
+    ],
+  },
   fields: [
     {
       type: 'row',
@@ -47,6 +66,19 @@ export const Users: CollectionConfig = {
       ],
     },
     {
+      name: 'fullName',
+      type: 'text',
+      admin: { hidden: true },
+      access: { read: () => true },
+    },
+    {
+      name: 'email',
+      type: 'email',
+      access: { 
+        read: ({ req }) => (req.user?.id === req.data?.id || req.user?.roles?.includes('admin')) ?? false
+      },
+    },
+    {
       name: 'roles',
       saveToJWT: true,
       type: 'select',
@@ -54,7 +86,7 @@ export const Users: CollectionConfig = {
       defaultValue: ['dashboard'],
       required: true,
       access: {
-        // Only admins can create or update a value for this field
+        read: ({ req }) => req.user?.roles?.includes('admin') ?? false,
         create: isAdminFieldLevel,
         update: isAdminFieldLevel,
       },
