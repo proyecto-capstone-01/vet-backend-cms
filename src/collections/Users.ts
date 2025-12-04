@@ -2,12 +2,12 @@ import type { CollectionConfig } from 'payload'
 import { isAdmin, isAdminFieldLevel } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 
+
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
+    read: isAdminOrSelf,
     create: isAdmin,
-    read: () => true,
-
     update: isAdminOrSelf,
     delete: isAdmin,
   },
@@ -69,13 +69,8 @@ export const Users: CollectionConfig = {
       name: 'fullName',
       type: 'text',
       admin: { hidden: true },
-      access: { read: () => true },
-    },
-    {
-      name: 'email',
-      type: 'email',
-      access: { 
-        read: ({ req }) => (req.user?.id === req.data?.id || req.user?.roles?.includes('admin')) ?? false
+      access: {
+        read: () => true
       },
     },
     {
@@ -86,7 +81,6 @@ export const Users: CollectionConfig = {
       defaultValue: ['dashboard'],
       required: true,
       access: {
-        read: ({ req }) => req.user?.roles?.includes('admin') ?? false,
         create: isAdminFieldLevel,
         update: isAdminFieldLevel,
       },
