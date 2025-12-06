@@ -171,6 +171,7 @@ export default function AnalyticsClient({
               ? pieChartData
               : [{ name: 'Sin datos', value: 1, fill: 'var(--chart-1)' }]
           }
+          showLegend={true}
         />
         <GenericPieChart
           title="Tipos de Servicio"
@@ -180,6 +181,7 @@ export default function AnalyticsClient({
               ? serviceChartData
               : [{ name: 'Sin datos', value: 1, fill: 'var(--chart-2)' }]
           }
+          showLegend={true}
         />
         <GenericPieChart
           title="Ventas por Categoría"
@@ -189,6 +191,7 @@ export default function AnalyticsClient({
               ? productChartData
               : [{ name: 'Sin datos', value: 1, fill: 'var(--chart-1)' }]
           }
+          showLegend={true}
         />
       </div>
 
@@ -203,6 +206,7 @@ export default function AnalyticsClient({
             { key: 'tienda', label: 'Ventas en Tienda', color: 'var(--chart-2)' },
           ]}
           hideTimeRangeSelector
+          showLegend={true}
         />
         <GenericAreaChart
           title="Usuarios Activos"
@@ -210,27 +214,30 @@ export default function AnalyticsClient({
           // @ts-ignore
           data={ventasData}
           dataKeys={[
-            { key: 'online', label: 'Citas Online', color: 'var(--chart-3)' },
-            { key: 'tienda', label: 'Citas Presenciales', color: 'var(--chart-5)' },
+            { key: 'online', label: 'Citas Online', color: 'var(--primary)' },
+            { key: 'tienda', label: 'Citas Presenciales', color: 'var(--chart-2)' },
           ]}
           hideTimeRangeSelector
+          showLegend={true}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-6 @xl:grid-cols-2">
         <GenericBarChart
           title="Nuevos Registros (Barras)"
-          description="Nuevos usuarios por canal"
+          description={`Nuevos usuarios por canal (últimos ${dateRange} días)`}
           // @ts-ignore
           data={ventasData}
-          dataKeys={[{ key: 'tienda', label: 'Registros Tienda', color: 'var(--chart-5)' }]}
+          dataKeys={[{ key: 'tienda', label: 'Registros Tienda', color: 'var(--chart-2)' }]}
+          showLegend={true}
         />
         <GenericBarChart
           title="Citas por Canal"
-          description="Distribución de citas"
+          description={`Distribución de citas (últimos ${dateRange} días)`}
           // @ts-ignore
           data={ventasData}
-          dataKeys={[{ key: 'online', label: 'Citas Online', color: 'var(--chart-3)' }]}
+          dataKeys={[{ key: 'online', label: 'Citas Online', color: 'var(--chart-2)' }]}
+          showLegend={true}
         />
       </div>
     </div>
@@ -239,21 +246,22 @@ export default function AnalyticsClient({
 
 function filterAppointmentsByDateRange(appointments: Appointment[], days: number): Appointment[] {
   const now = DateTime.now().setZone(TZ)
-  const startDate = now.minus({ days })
+  const startDate = now.minus({ days }).startOf('day') // Incluir desde el inicio del día
 
   return appointments.filter((apt) => {
     if (!apt.date) return false
     const aptDate = DateTime.fromISO(apt.date, { zone: TZ })
-    return aptDate >= startDate && aptDate <= now
+    return aptDate >= startDate && aptDate < now.plus({ days: 1 }).startOf('day')
   })
 }
 
 function generateChartData(appointments: Appointment[], days: number): ChartDataPoint[] {
   const chartData: ChartDataPoint[] = []
-  const now = DateTime.now().setZone(TZ)
+  const now = DateTime.now().setZone(TZ).startOf('day')
 
   for (let i = days - 1; i >= 0; i--) {
     const date = now.minus({ days: i })
+    const dateIso = date.toISO()
     const dateStr = date.toFormat('yyyy-MM-dd')
 
     const dayAppointments = appointments.filter((apt) => {
@@ -262,10 +270,14 @@ function generateChartData(appointments: Appointment[], days: number): ChartData
       return aptDate.toFormat('yyyy-MM-dd') === dateStr
     })
 
+    const totalCount = dayAppointments.length
+    const online = dayAppointments.filter((apt) => apt.status === 'confirmed').length
+    const tienda = dayAppointments.filter((apt) => apt.status === 'completed').length
+
     chartData.push({
-      date: dateStr,
-      online: Math.floor(dayAppointments.length * 0.6),
-      tienda: Math.floor(dayAppointments.length * 0.4),
+      date: dateIso!,
+      online: online > 0 ? online : totalCount,
+      tienda: tienda > 0 ? tienda : 0,
     })
   }
 

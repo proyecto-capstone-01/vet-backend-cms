@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/card"
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
@@ -46,6 +48,8 @@ interface GenericBarChartProps {
   data: { // @ts-ignore
     date: string; [key: string]: number }[]
   dataKeys: DataKeyConfig[]
+  showLegend?: boolean
+  hideTimeRangeSelector?: boolean
 }
 
 // Se renombra el componente
@@ -54,6 +58,8 @@ export function GenericBarChart({
   description,
   data,
   dataKeys,
+  showLegend = true,
+  hideTimeRangeSelector = false,
 }: GenericBarChartProps) {
   const isMobile = useIsMobile()
   const [timeRange, setTimeRange] = React.useState("90d")
@@ -87,16 +93,18 @@ export function GenericBarChart({
               </CardDescription>
             )}
           </div>
-          <CardAction className="mt-3 sm:mt-0">
-            <ToggleGroup
-              type="single"
-              value={timeRange}
-              onValueChange={setTimeRange}
-              variant="outline"
-              className="hidden @[767px]/card:flex"
-            >
-            </ToggleGroup>
-          </CardAction>
+          {!hideTimeRangeSelector && (
+            <CardAction className="mt-3 sm:mt-0">
+              <ToggleGroup
+                type="single"
+                value={timeRange}
+                onValueChange={setTimeRange}
+                variant="outline"
+                className="hidden @[767px]/card:flex"
+              >
+              </ToggleGroup>
+            </CardAction>
+          )}
         </div>
       </CardHeader>
 
@@ -166,14 +174,24 @@ export function GenericBarChart({
               }
             />
 
-            {/* 4. Se cambia <Area> por <Bar> */}
+            {showLegend && (
+              <ChartLegend content={<ChartLegendContent />} />
+            )}
+
             {dataKeys.map((key) => (
               <Bar
                 key={key.key}
                 dataKey={key.key}
-                fill={`url(#fill-${key.key})`}
-                // Se añade un stackId para apilar las barras si hay múltiples dataKeys
+                fill={key.color}
                 stackId="a"
+                label={{
+                  position: 'insideTopRight',
+                  fill: '#ffffff',
+                  fontSize: 15,
+                  fontWeight: '600',
+                  offset: 8,
+                  formatter: (value: number) => value > 0 ? value : '',
+                }}
               />
             ))}
           </BarChart>

@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card"
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
@@ -43,6 +45,8 @@ interface GenericAreaChartProps {
   data: { // @ts-ignore
     date: string; [key: string]: number }[]
   dataKeys: DataKeyConfig[]
+  showLegend?: boolean
+  hideTimeRangeSelector?: boolean
 }
 
 export function GenericAreaChart({
@@ -50,6 +54,8 @@ export function GenericAreaChart({
   description,
   data,
   dataKeys,
+  showLegend = true,
+  hideTimeRangeSelector = false,
 }: GenericAreaChartProps) {
   const isMobile = useIsMobile()
   const [timeRange, setTimeRange] = React.useState("90d")
@@ -81,16 +87,18 @@ export function GenericAreaChart({
               </CardDescription>
             )}
           </div>
-          <CardAction className="mt-3 sm:mt-0">
-            <ToggleGroup
-              type="single"
-              value={timeRange}
-              onValueChange={setTimeRange}
-              variant="outline"
-              className="hidden @[767px]/card:flex"
-            >
-            </ToggleGroup>
-          </CardAction>
+          {!hideTimeRangeSelector && (
+            <CardAction className="mt-3 sm:mt-0">
+              <ToggleGroup
+                type="single"
+                value={timeRange}
+                onValueChange={setTimeRange}
+                variant="outline"
+                className="hidden @[767px]/card:flex"
+              >
+              </ToggleGroup>
+            </CardAction>
+          )}
         </div>
       </CardHeader>
 
@@ -149,7 +157,11 @@ export function GenericAreaChart({
                   indicator="dot"
                 />
               }
-            />
+            />  
+            
+            {showLegend && (
+              <ChartLegend content={<ChartLegendContent />} />
+            )}
 
             {dataKeys.map((key) => (
               <Area
@@ -159,6 +171,14 @@ export function GenericAreaChart({
                 fill={`url(#fill-${key.key})`}
                 stroke={key.color}
                 strokeWidth={2}
+                label={{
+                  position: 'insideTopRight',
+                  fill: '#ffffff',
+                  fontSize: 15,
+                  fontWeight: '600',
+                  offset: 8,
+                  formatter: (value: number) => value > 0 ? value : '',
+                }}
               />
             ))}
           </AreaChart>

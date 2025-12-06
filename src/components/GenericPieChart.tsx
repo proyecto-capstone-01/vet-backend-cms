@@ -26,14 +26,15 @@ interface GenericPieChartProps {
     title: string
     description?: string
     data: PieChartData[]
+    showLegend?: boolean
 }
 
 export function GenericPieChart({
     title,
     description,
     data,
+    showLegend = true,
 }: GenericPieChartProps) {
-
 
   return (
         <Card className="@container/card">
@@ -63,15 +64,15 @@ export function GenericPieChart({
                 innerRadius={0}
                 outerRadius={100}
                 strokeWidth={0}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ value, percent }) => `${value} (${(percent * 100).toFixed(0)}%)`}
                 labelLine={false}
                 >
                 {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
                 </Pie>
+                {showLegend && <ChartLegend content={<ChartLegendContent nameKey="name" />} />}
             </PieChart>
-            <ChartLegend content={<ChartLegendContent nameKey="name" />} />
             </ChartContainer>
         </div>
         </Card>
